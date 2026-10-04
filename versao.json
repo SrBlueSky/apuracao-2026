@@ -1,5 +1,5 @@
 {
-  "versao": 4,
-  "notas": "Agora dá para escolher o estado (SP, RJ, MG ou ES) para ver Governador e Senado.",
-  "apk": "https://github.com/SrBlueSky/apuracao-2026/raw/main/Apuracao2026-v4.apk"
+  "versao": 5,
+  "notas": "Na aba Estados, agora aparece também o resultado de Presidente no estado escolhido.",
+  "apk": "https://github.com/SrBlueSky/apuracao-2026/raw/main/Apuracao2026-v5.apk"
 }
