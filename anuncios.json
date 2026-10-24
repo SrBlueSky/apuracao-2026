@@ -1,0 +1,41 @@
+{
+  "_leia": "Anúncios do site e do app. Para um patrocinador aparecer: preencha o espaço, troque \"ativo\" para true e publique. Sem anúncio ativo, o site mostra \"Anuncie aqui\" e o app não mostra nada. Veja ANUNCIOS.md.",
+  "espacos": {
+    "presidente": {
+      "ativo": false,
+      "mostrarNoApp": false,
+      "anunciante": "",
+      "titulo": "",
+      "texto": "",
+      "botao": "Saiba mais",
+      "link": "",
+      "imagem": "",
+      "de": "",
+      "ate": ""
+    },
+    "mapa": {
+      "ativo": false,
+      "mostrarNoApp": false,
+      "anunciante": "",
+      "titulo": "",
+      "texto": "",
+      "botao": "Saiba mais",
+      "link": "",
+      "imagem": "",
+      "de": "",
+      "ate": ""
+    },
+    "rodape": {
+      "ativo": false,
+      "mostrarNoApp": false,
+      "anunciante": "",
+      "titulo": "",
+      "texto": "",
+      "botao": "Saiba mais",
+      "link": "",
+      "imagem": "",
+      "de": "",
+      "ate": ""
+    }
+  }
+}

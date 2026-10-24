@@ -1,0 +1,4 @@
+# Cloudflare Pages: o app (file://) lê o anuncios.json direto daqui.
+/anuncios.json
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=300

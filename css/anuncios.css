@@ -29,3 +29,14 @@
 }
 
 @media print { .anuncio { display: none; } }
+
+/* anúncio de patrocinador (vindo do anuncios.json) */
+.anuncio-pago.com-img { grid-template-columns: 88px minmax(0, 1fr); align-items: center; column-gap: 14px; }
+.anuncio-pago.com-img .anuncio-btn { grid-column: 1 / -1; }
+.anuncio-img { width: 88px; height: 88px; object-fit: cover; border-radius: 12px; background: var(--surface); }
+@media (min-width: 1024px) {
+  .anuncio-faixa .anuncio-pago.com-img { grid-template-columns: 120px minmax(0, 1fr) auto; }
+  .anuncio-faixa .anuncio-pago.com-img .anuncio-btn { grid-column: auto; }
+  .anuncio-faixa .anuncio-img { width: 120px; height: 80px; }
+}
+.anuncio-txt .anuncio-regra { display: block; margin-top: 6px; }
