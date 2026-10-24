@@ -1,5 +1,5 @@
 {
-  "_leia": "Anúncios do site e do app. Para um patrocinador aparecer: preencha o espaço, troque \"ativo\" para true e publique. Sem anúncio ativo, o site mostra \"Anuncie aqui\" e o app não mostra nada. Veja ANUNCIOS.md.",
+  "_leia": "Anúncios do site e do app. Para um patrocinador aparecer: preencha o espaço, troque \"ativo\" para true e publique. Sem anúncio ativo, o site mostra \"Anuncie aqui\" e o app não mostra nada. Veja ANUNCIOS.md. O botão \"Apoie\" (Pix) fica em \"apoio\": troque \"ativo\" para true quando a chave Pix estiver cadastrada no banco.",
   "espacos": {
     "presidente": {
       "ativo": false,
@@ -37,5 +37,13 @@
       "de": "",
       "ate": ""
     }
+  },
+  "apoio": {
+    "ativo": false,
+    "mostrarNoApp": true,
+    "chavePix": "contato@pedrohipolito.com.br",
+    "nome": "Pedro Hipolito",
+    "cidade": "BRASIL",
+    "texto": "O site é independente e gratuito. Se ele te ajudou a acompanhar a apuração, você pode apoiar com qualquer valor pelo Pix."
   }
 }

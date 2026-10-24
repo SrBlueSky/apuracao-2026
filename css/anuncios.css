@@ -40,3 +40,37 @@
   .anuncio-faixa .anuncio-img { width: 120px; height: 80px; }
 }
 .anuncio-txt .anuncio-regra { display: block; margin-top: 6px; }
+
+/* botão "Apoie" (Pix) — js/apoio.js */
+.btn-apoio {
+  display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--c13); font: inherit; font-weight: 700;
+  font-size: 13.5px; cursor: pointer; flex: none;
+}
+.btn-apoio span { color: var(--ink); }
+.btn-apoio:hover { background: var(--surface-2); }
+@media (max-width: 1023.98px) {
+  .topo-dir .btn-apoio { width: 44px; height: 44px; padding: 0; justify-content: center; }
+  .topo-dir .btn-apoio span { display: none; }
+  .topo-dir .btn-apoio svg { width: 22px; height: 22px; }
+}
+.rodape-apoio { margin-top: 14px; }
+.rodape-apoio .btn-apoio { height: 44px; padding: 0 16px; }
+.apoio-dialogo { border: 0; padding: 0; border-radius: 20px; background: var(--surface); color: var(--ink);
+  width: min(400px, calc(100vw - 32px)); box-shadow: var(--sombra); }
+.apoio-dialogo::backdrop { background: rgba(10, 12, 16, .55); }
+.apoio-cx { position: relative; padding: 26px 22px 20px; display: grid; gap: 12px; }
+.apoio-cx h2 { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; }
+.apoio-cx p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.apoio-fechar { position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; border-radius: 50%; border: 0;
+  background: transparent; color: var(--muted); font-size: 26px; line-height: 1; cursor: pointer; }
+.apoio-qr { justify-self: center; width: 210px; height: 210px; padding: 8px; background: #fff; border-radius: 14px; }
+.apoio-qr svg { width: 100%; height: 100%; display: block; }
+.apoio-rot { font-size: 12px !important; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--faint) !important; }
+.apoio-chave { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.apoio-chave code { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; font-size: 14.5px; font-weight: 700;
+  background: var(--surface-2); padding: 10px 12px; border-radius: 10px; }
+.apoio-btn { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--ink); color: var(--bg);
+  font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
+.apoio-btn-2 { background: var(--surface-2); color: var(--ink); }
+.apoio-nota { font-size: 12.5px !important; }

@@ -152,7 +152,12 @@
       if (i >= lista.length) return Promise.resolve(null);
       return buscar(lista[i]).catch(function () { return tentar(i + 1); });
     }
-    return tentar(0).then(function (dados) { if (dados) ultimo = dados; aplicar(ultimo); });
+    return tentar(0).then(function (dados) {
+      if (dados) ultimo = dados;
+      aplicar(ultimo);
+      // O mesmo arquivo traz outras configurações remotas (ex. o botão de apoio, js/apoio.js).
+      if (ultimo) document.dispatchEvent(new CustomEvent("apuracoes:config", { detail: ultimo }));
+    });
   }
 
   var ultimo = null;
