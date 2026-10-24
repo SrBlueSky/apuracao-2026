@@ -182,5 +182,27 @@
     return { t: t, br: br, ufs: outUfs, gov: gov };
   }
 
-  return { gerar: gerar, progressoPorTempo: progressoPorTempo, hash: hash };
+  // ---- Exterior (mapa-múndi): registros FALSOS por cidade, a partir do 1º turno por cidade (ref = primeiro-turno-exterior.json).
+  // Determinístico (hash do código da cidade e do país). Devolve { "<cd5>": {v13, v22, vv, s, st, e} } — o mesmo formato dos
+  // registros reais (Exterior.registroDe). Não precisa fechar com o total "Exterior" dos estados (que vem de gerar()).
+  function gerarExterior(ref, t, paisDe) {
+    t = clamp(typeof t === "number" && isFinite(t) ? t : 0, 0, 1);
+    var out = {};
+    Object.keys((ref && ref.cidades) || {}).forEach(function (cd) {
+      var r = ref.cidades[cd], iso = paisDe ? (paisDe(cd) || "") : "";
+      if (!(r.vv > 0) || !(r.v13 + r.v22 > 0)) { out[cd] = { v13: 0, v22: 0, vv: 0, s: 0, st: r.st, e: r.e }; return; }
+      var atraso = frac(cd + "d") * 0.25, vel = 1.2 + frac(cd + "s") * 0.8;
+      var p = clamp((t * 1.3 - atraso) * vel, 0, 1);
+      var base = r.v13 / (r.v13 + r.v22);
+      var final = clamp(base + (frac(iso + "n") - 0.5) * 0.14 + (frac(cd + "n") - 0.5) * 0.06, 0.03, 0.97);
+      var vies = (frac(cd + "b") - 0.5) * 0.22;
+      var share = clamp(final + vies * (1 - p), 0.03, 0.97);
+      var vv = p >= 1 ? Math.round(r.vv * 0.97) : Math.round(r.vv * 0.97 * p);
+      var v13 = Math.round(vv * share);
+      out[cd] = { v13: v13, v22: vv - v13, vv: vv, s: p >= 1 ? r.st : Math.round(r.st * p), st: r.st, e: r.e };
+    });
+    return out;
+  }
+
+  return { gerar: gerar, gerarExterior: gerarExterior, progressoPorTempo: progressoPorTempo, hash: hash };
 });

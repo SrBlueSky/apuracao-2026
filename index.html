@@ -22,6 +22,7 @@
 (function(){try{var t=localStorage.getItem("tema");if(!t&&window.AndroidBridge&&localStorage.getItem("apuracao2026_tema")==='"escuro"')t="dark";if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}})();
 </script>
 <link rel="stylesheet" href="css/estilo.css">
+<link rel="stylesheet" href="css/anuncios.css">
 </head>
 <body>
 
@@ -178,17 +179,23 @@
   <div class="wrap">
     <header class="sec-cab">
       <div>
-        <p class="sec-kicker">Presidente por estado</p>
+        <p class="sec-kicker" id="kickerMapa">Presidente por estado</p>
         <h2 id="tituloMapa">Mapa do Brasil</h2>
         <p class="sec-sub" id="mapaSub">Cada estado leva a cor de quem está à frente; quanto mais intensa, maior a vantagem.</p>
       </div>
-      <div class="seg-ctl" role="group" aria-label="Qual turno mostrar no mapa" id="ctlMapa">
-        <button type="button" data-modo="2t" aria-pressed="true">2º turno ao vivo</button>
-        <button type="button" data-modo="1t" aria-pressed="false">1º turno</button>
+      <div class="sec-ctls">
+        <div class="seg-ctl" role="group" aria-label="Onde olhar: Brasil ou voto no exterior" id="ctlOnde">
+          <button type="button" data-onde="brasil" aria-pressed="true">Brasil</button>
+          <button type="button" data-onde="exterior" aria-pressed="false">Exterior</button>
+        </div>
+        <div class="seg-ctl" role="group" aria-label="Qual turno mostrar no mapa" id="ctlMapa">
+          <button type="button" data-modo="2t" aria-pressed="true">2º turno ao vivo</button>
+          <button type="button" data-modo="1t" aria-pressed="false">1º turno</button>
+        </div>
       </div>
     </header>
 
-    <div class="mapa-grade">
+    <div class="mapa-grade" id="brasilGrade">
       <div class="mapa-col">
         <div class="mapa-caixa" id="mapaBox" aria-live="off"></div>
         <div class="mapa-extra">
@@ -202,6 +209,35 @@
         <div class="rank-uf-bloco">
           <h3 class="rank-uf-tit">Ranking dos estados <small id="rankUfNota">por vantagem</small></h3>
           <ol class="rank-uf" id="rankUFs"></ol>
+        </div>
+      </aside>
+    </div>
+
+    <!-- visão "Exterior": mapa-múndi por país (hash #mapa/exterior). Carregada só quando aberta. -->
+    <div class="mapa-grade mundi-grade" id="mundiGrade" hidden>
+      <div class="mapa-col">
+        <div class="mapa-caixa mundi-caixa">
+          <div class="mundi-box" id="mundiBox" aria-live="off"><p class="cartao-vazio">Carregando o mapa-múndi…</p></div>
+        </div>
+        <div class="mapa-extra">
+          <button type="button" class="chip-zz" id="chipBR" data-onde="brasil" aria-label="Voltar ao mapa do Brasil">‹ Mapa do Brasil</button>
+          <div class="mundi-zoom" role="group" aria-label="Zoom do mapa-múndi">
+            <button type="button" id="mzMenos" aria-label="Afastar o mapa" title="Afastar" disabled>−</button>
+            <button type="button" id="mzMais" aria-label="Aproximar o mapa" title="Aproximar">+</button>
+            <button type="button" id="mzReset" aria-label="Ver o mundo inteiro" title="Ver o mundo inteiro" disabled>
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <span class="mapa-dica mundi-estado" id="mundiEstado" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+      <aside class="mapa-lateral" aria-label="Detalhes do mapa-múndi">
+        <div class="cartao" id="cartaoPais" aria-live="polite"></div>
+        <div class="legenda" id="legendaMundi" aria-label="Legenda do mapa-múndi"></div>
+        <div class="rank-pais-bloco">
+          <h3 class="rank-uf-tit">Ranking dos países <small id="rankPaisNota">por votos válidos</small></h3>
+          <ol class="rank-uf" id="rankPaises"></ol>
+          <button type="button" class="btn-ver rank-mais" id="rankPaisMais" hidden>Mostrar todos</button>
         </div>
       </aside>
     </div>
@@ -333,9 +369,13 @@
 <script src="js/demo.js"></script>
 <script src="js/evolucao.js"></script>
 <script src="js/noticias.js"></script>
+<script src="js/exterior-paises.js"></script>
+<script src="js/exterior.js"></script>
+<script src="js/mundi.js"></script>
 <script src="js/atualizacao-app.js"></script>
 <script src="dados/primeiro-turno.js"></script>
 <script src="js/mapa-svg.js"></script>
 <script src="js/app.js"></script>
+<script src="js/anuncios.js"></script>
 </body>
 </html>

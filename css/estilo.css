@@ -13,6 +13,7 @@
   --gA: #0b8576;
   --gB: #c0780a;
   --mapa-vazio: #e2ded3;
+  --mapa-sem: #f0ede5;                 /* mapa-múndi: país sem brasileiros votando */
   --sombra: 0 1px 2px rgba(20, 22, 28, .05), 0 8px 24px -12px rgba(20, 22, 28, .12);
   --serif: "Inter Tight", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* títulos e números grandes: sem serifa, direto */
   --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -25,14 +26,14 @@
   :root:not([data-theme="light"]) {
     --bg: #0f1115; --surface: #171a21; --surface-2: #1e222b; --ink: #f1efe9; --muted: #a2a9b6; --faint: #6f7684;
     --line: #2a2f3a; --c13: #ff5a5a; --c22: #5b9bff; --outros: #4a4f5b; --gA: #31c2b0; --gB: #e8a93c;
-    --mapa-vazio: #2a2f3a; --sombra: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
+    --mapa-vazio: #2a2f3a; --mapa-sem: #1d2129; --sombra: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0f1115; --surface: #171a21; --surface-2: #1e222b; --ink: #f1efe9; --muted: #a2a9b6; --faint: #6f7684;
   --line: #2a2f3a; --c13: #ff5a5a; --c22: #5b9bff; --outros: #4a4f5b; --gA: #31c2b0; --gB: #e8a93c;
-  --mapa-vazio: #2a2f3a; --sombra: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
+  --mapa-vazio: #2a2f3a; --mapa-sem: #1d2129; --sombra: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
   color-scheme: dark;
 }
 
@@ -406,6 +407,47 @@ h1, h2, h3, p { margin: 0; }
 .rk-pt.c13 { background: var(--c13); } .rk-pt.c22 { background: var(--c22); }
 .rank-uf .rank-lin b.c13 { color: var(--c13); } .rank-uf .rank-lin b.c22 { color: var(--c22); } .rank-uf .rank-lin b.mut { color: var(--faint); font-weight: 500; }
 
+/* ---------- mapa-múndi (aba Mapa > Exterior) ---------- */
+.sec-ctls { display: flex; flex-wrap: wrap; gap: 8px 10px; }
+.mundi-caixa { padding: 6px; overflow: hidden; }
+@media (max-width: 639.98px) { .mundi-caixa { margin: 0 calc(-1 * var(--gut)); border-left: 0; border-right: 0; border-radius: 0; padding: 4px 0; } .mundi-box { border-radius: 0; } }
+.mundi-box { overflow: hidden; border-radius: calc(var(--raio) - 6px); }
+.mundi-svg { width: 100%; height: auto; max-height: none; margin: 0 auto; display: block; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; }
+.mundi-box.zoom .mundi-svg { touch-action: none; cursor: grab; }
+.mundi-svg .terra { fill: var(--mapa-sem); stroke: var(--surface); stroke-width: .5px; vector-effect: non-scaling-stroke; pointer-events: none; }
+.mundi-svg [data-pais] {
+  fill: var(--mapa-vazio); stroke: var(--surface); stroke-width: .8px; vector-effect: non-scaling-stroke; stroke-linejoin: round;
+  cursor: pointer; transition: fill .6s ease, filter .15s ease; outline: none;
+}
+.mundi-svg [data-pais="BR"] { fill: color-mix(in srgb, var(--ink) 9%, var(--surface)); stroke-width: .6px; }
+.mundi-svg [data-pais="BR"]:hover { fill: color-mix(in srgb, var(--ink) 16%, var(--surface)); }
+.mundi-svg [data-pais][data-l="13"] { --cor: var(--c13); }
+.mundi-svg [data-pais][data-l="22"] { --cor: var(--c22); }
+.mundi-svg [data-pais][data-l] { fill: color-mix(in srgb, var(--cor) calc(var(--m) * 1%), var(--surface)); }
+.mundi-svg .bolha { stroke: var(--faint); stroke-width: 1px; }
+.mundi-svg .bolha[data-l] { stroke: color-mix(in srgb, var(--cor) 70%, var(--ink)); }
+.mundi-svg [data-pais]:not([data-pais="BR"]):hover, .mundi-svg [data-pais].sel { stroke: var(--ink); stroke-width: 2px; filter: brightness(1.04); }
+.mundi-svg .bolha:hover, .mundi-svg .bolha.sel { stroke-width: 2.2px; }
+.mundi-zoom { display: flex; gap: 6px; margin-left: auto; }
+.mundi-estado { flex: 1 1 100%; order: 3; }
+.mundi-zoom button {
+  width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink); font-size: 22px; font-weight: 600; line-height: 1; padding: 0;
+}
+.mundi-zoom button:disabled { opacity: .4; cursor: default; }
+.mundi-zoom button:not(:disabled):hover { border-color: var(--ink); }
+.leg-esc.sem i { background: var(--mapa-sem); width: 24px; border: 1px solid var(--line); }
+.rank-pais-bloco { display: block; }
+.rank-mais { margin-top: 8px; }
+.cartao-cidades { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.cartao-cid-tit { font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.cartao-cid-tit small { text-transform: none; letter-spacing: 0; font-weight: 500; margin-left: 4px; }
+.cartao-cidades ul { list-style: none; margin: 0; padding: 0; display: grid; }
+.cartao-cidades li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 30px; font-size: 14px; }
+.cartao-cidades .cid-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.cartao-cidades b { font-size: 13px; font-weight: 800; white-space: nowrap; }
+.cartao-cidades b.c13 { color: var(--c13); } .cartao-cidades b.c22 { color: var(--c22); } .cartao-cidades b.mut { color: var(--faint); font-weight: 500; }
+
 /* evolução */
 .evo-grade { display: grid; gap: 14px; }
 .evo-principal { padding: 14px; }
@@ -569,6 +611,10 @@ h1, h2, h3, p { margin: 0; }
   .mapa-lateral { position: sticky; top: calc(var(--topo-h) + 16px); max-height: calc(100vh - var(--topo-h) - 32px); overflow-y: auto; padding-right: 2px; scrollbar-width: thin; }
   .cartao { min-height: 280px; }
   .rank-uf-bloco { display: block; }
+  .mundi-svg { max-height: calc(100vh - var(--topo-h) - 190px); }
+  .mundi-caixa { padding: 10px; }
+  .mundi-estado { flex: 1 1 auto; order: 1; }
+  .mundi-zoom { margin-left: 0; order: 2; }
 
   /* aba Estados: tabela larga */
   .uf-cab, .ufs li.uf { grid-template-columns: minmax(130px, 1.2fr) minmax(110px, 1.6fr) 104px 104px 124px 92px; column-gap: 16px; }

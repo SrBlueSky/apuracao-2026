@@ -37,7 +37,7 @@
   var S = {
     br: null, ufs: {}, gov: {}, vis: {},
     okBr: 0, falhasBr: 0, okEst: 0,
-    mapaModo: "2t", ordem: "nome", agrupar: false, regiao: "",
+    mapaModo: "2t", onde: "brasil", ordem: "nome", agrupar: false, regiao: "",
     fixado: null, hover: null, ordemChave: "",
     linhas: {}, govEls: {}, demoInicio: (typeof performance !== "undefined" ? performance.now() : 0)
   };
@@ -186,7 +186,7 @@
     var box = $("mapaBox");
     box.querySelectorAll("path[data-uf]").forEach(function (p) { if (S.vis[p.dataset.uf]) pintar(p, S.vis[p.dataset.uf]); });
     if (S.vis.zz) pintar($("chipZZ"), S.vis.zz);
-    setTxt($("mapaSub"), S.mapaModo === "2t"
+    if (S.onde === "brasil") setTxt($("mapaSub"), S.mapaModo === "2t"
       ? "Cada estado leva a cor de quem está à frente no 2º turno; quanto mais intensa, maior a vantagem. Cinza: ainda sem votos apurados."
       : "Resultado final do 1º turno (04/10), colorido pelo mais votado entre Lula e Flávio em cada estado. Os demais candidatos não entram na cor.");
     $("ctlMapa").querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.modo === S.mapaModo)); });
@@ -314,12 +314,16 @@
       if (p && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); alternarFixo(p.dataset.uf); }
     });
     var chip = $("chipZZ");
-    chip.addEventListener("click", function () { alternarFixo("zz"); });
+    chip.addEventListener("click", function () { irParaMapaOnde("exterior"); });       // Exterior = mapa-múndi (#mapa/exterior)
     chip.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") setHover("zz"); });
     chip.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") setHover(null); });
+    $("ctlOnde").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-onde]"); if (b) irParaMapaOnde(b.dataset.onde);
+    });
+    $("chipBR").addEventListener("click", function () { irParaMapaOnde("brasil"); });
     // toque/clique fora fecha o cartão fixado
     document.addEventListener("click", function (e) {
-      if (S.fixado && !e.target.closest("#mapaBox, .mapa-lateral, #chipZZ, #ctlMapa, .dest-grade")) { S.fixado = null; renderMapa(); }
+      if (S.fixado && !e.target.closest("#mapaBox, #brasilGrade .mapa-lateral, #chipZZ, #ctlMapa, .dest-grade")) { S.fixado = null; renderMapa(); }
     });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && S.fixado) { S.fixado = null; renderMapa(); } });
     $("ctlMapa").addEventListener("click", function (e) {
@@ -327,6 +331,29 @@
       if (!b) return;
       S.mapaModo = b.dataset.modo;
       renderMapa();
+      if (mundi) mundi.modoMudou();
+    });
+  }
+
+  // =====================================================================
+  // MAPA-MÚNDI (voto no exterior): js/mundi.js, dados em exterior.js
+  // =====================================================================
+  var mundi = null;
+  function criarMundi() {
+    if (!window.Mundi || !window.Exterior || !window.ExteriorPaises) return;
+    mundi = window.Mundi.criar({
+      C: C, X: window.Exterior, P: window.ExteriorPaises, D: D, DEMO: DEMO, esc: esc, $: $, setHtml: setHtml, setTxt: setTxt,
+      buscarUrl: buscarUrl, ele2: C.ELE.pres2, modo: function () { return S.mapaModo; },
+      demoT: function () { return S.demoT !== undefined && S.demoT !== null ? S.demoT : 0; },
+      reduz: function () { return REDUZ; },
+      irParaBrasil: function () { irParaMapaOnde("brasil"); },
+      // total do Exterior (arquivo "zz" dos estados), para o cartão sem país escolhido
+      totalExterior: function () {
+        var v = S.vis.zz; if (!v) return null;
+        if (S.mapaModo === "2t" && v.d.temVotos) return { temVotos: true, p13: v.d.a.pct, p22: v.d.b.pct, ref: false };
+        if (v.ref && v.ref.vv > 0) return { temVotos: true, p13: v.ref["13"].pct, p22: v.ref["22"].pct, ref: true };
+        return null;
+      }
     });
   }
 
@@ -563,11 +590,38 @@
   var abaAtual = null, aoMostrar = {};
 
   function painelDe(nome) { return nome ? $("painel-" + nome) : null; }
-  function abaDoHash() {
+  function hashLimpo() {
     var h = "";
     try { h = decodeURIComponent((location.hash || "").replace(/^#/, "")).toLowerCase(); } catch (e) { h = ""; }
+    return h;
+  }
+  // "#mapa/exterior" -> aba "mapa" (o que vem depois da barra é a sub-visão da aba)
+  function abaDoHash() {
+    var h = hashLimpo().split("/")[0];
     if (h === "numeros") h = "presidente";          // âncora da versão antiga (página longa)
     return painelDe(h) ? h : "presidente";
+  }
+  function subDoHash() {
+    var p = hashLimpo().split("/");
+    return p[0] === "mapa" && p[1] === "exterior" ? "exterior" : "";
+  }
+  // Brasil | Exterior dentro da aba Mapa. O estado fica na URL (#mapa / #mapa/exterior), então "voltar" funciona.
+  function irParaMapaOnde(onde) {
+    var alvo = onde === "exterior" ? "mapa/exterior" : "mapa";
+    if (hashLimpo() === alvo) sincronizarMapaOnde();
+    else location.hash = alvo;
+  }
+  function sincronizarMapaOnde() {
+    var ext = abaAtual === "mapa" && subDoHash() === "exterior", antes = S.onde;
+    S.onde = ext ? "exterior" : "brasil";
+    var gB = $("brasilGrade"), gM = $("mundiGrade");
+    if (!gB || !gM) return;
+    gB.hidden = ext; gM.hidden = !ext;
+    $("ctlOnde").querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.onde === S.onde)); });
+    setTxt($("kickerMapa"), ext ? "Presidente · voto de brasileiros no exterior" : "Presidente por estado");
+    setTxt($("tituloMapa"), ext ? "Mapa-múndi do voto no exterior" : "Mapa do Brasil");
+    if (ext) { if (mundi) mundi.abrir(); }
+    else { if (mundi) mundi.fechar(); if (antes !== S.onde) renderMapa(); }
   }
   function botoesAbas() { return Array.prototype.slice.call($("abasLista").querySelectorAll('[role="tab"]')); }
 
@@ -592,13 +646,14 @@
       if (rolar) window.scrollTo(0, 0);
       if (aoMostrar[nome]) { try { aoMostrar[nome](); } catch (e) { console.error("aba", nome, e); } }
     }
+    try { sincronizarMapaOnde(); } catch (e) { console.error("mapa/onde", e); }
   }
   function irParaAba(nome) {
     if ((location.hash || "").replace(/^#/, "") === nome) ativarAba(nome, true);
     else location.hash = nome;                       // dispara hashchange; o botão "voltar" volta à aba anterior
   }
   function iniciarAbas() {
-    window.addEventListener("hashchange", function () { ativarAba(abaDoHash(), true); });
+    window.addEventListener("hashchange", function () { var n = abaDoHash(); ativarAba(n, n !== abaAtual); });
     var lista = $("abasLista");
     lista.addEventListener("click", function (e) {
       var b = e.target.closest('[role="tab"]'); if (b) irParaAba(b.dataset.aba);
@@ -671,6 +726,7 @@
     });
     $("rankUFs").addEventListener("click", function (e) {
       var b = e.target.closest && e.target.closest("button[data-uf]");
+      if (b && b.dataset.uf === "zz") { e.stopPropagation(); irParaMapaOnde("exterior"); return; }
       if (b) { e.stopPropagation(); alternarFixo(b.dataset.uf); }   // o clique não pode chegar ao "clicou fora" (a lista é refeita e o botão sai do DOM)
     });
   }
@@ -925,6 +981,7 @@
     C.UFS.forEach(function (uf) { S.vis[uf] = C.visaoUF(S.ufs[uf] || null, uf, PT); });
     try { renderHero(); } catch (e) { console.error("hero", e); }
     try { renderMapa(); } catch (e) { console.error("mapa", e); }
+    try { if (mundi) mundi.render(); } catch (e) { console.error("mundi", e); }
     try { renderLista(); } catch (e) { console.error("lista", e); }
     try { renderGov(); } catch (e) { console.error("gov", e); }
     try { renderNumeros(); } catch (e) { console.error("numeros", e); }
@@ -937,10 +994,12 @@
   // =====================================================================
   // REDE (TSE)
   // =====================================================================
-  function buscarTSE(ele, cargo, uf) {
+  function buscarTSE(ele, cargo, uf) { return buscarUrl(C.urlDados(ele, cargo, uf)); }
+  // busca e decodifica um arquivo .jws do TSE (pelo proxy do app, se for o caso)
+  function buscarUrl(url) {
     var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
     var to = setTimeout(function () { if (ctrl) ctrl.abort(); }, 15000);
-    return fetch(urlRede(C.urlDados(ele, cargo, uf)), { cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
+    return fetch(urlRede(url), { cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
       .then(function (txt) {
         var d = C.adaptarFormato2026(C.decodificarJws(txt));
@@ -1024,6 +1083,7 @@
       var p = C.PRES[k];
       $("foto" + k).innerHTML = htmlFoto(C.urlFoto(C.ELE.pres2, "br", p.sqcand), C.iniciais(p.nome), "Foto de " + p.nome);
     });
+    criarMundi();
     montarMapa(); construirMiniMapa(); construirLegenda(); construirLista(); construirGov(); construirNumeros(); iniciarTema();
     construirLinksNoticias(); renderNoticias();
     aoMostrar.evolucao = function () { EVO.tamanho = -1; evoAtualizar(); renderEvolucao(); };

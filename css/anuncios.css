@@ -1,0 +1,31 @@
+/* anuncios.css — espaços de publicidade (ver js/anuncios.js). Discretos, com rótulo
+ * "Publicidade" e separados do conteúdo da apuração. */
+.anuncio-faixa { padding: 8px 0 28px; }
+.anuncio-bloco { margin-top: 22px; }
+.anuncio-caixa {
+  position: relative; border: 1.5px dashed var(--line); border-radius: var(--raio);
+  background: var(--surface-2); padding: 22px 18px 16px; min-height: 100px;
+}
+.anuncio-rotulo {
+  position: absolute; top: 8px; left: 14px; font-size: 10.5px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--faint);
+}
+.anuncio-convite { display: grid; gap: 10px; justify-items: start; }
+.anuncio-txt strong { display: block; font-size: 1.15rem; font-weight: 800; letter-spacing: -.01em; }
+.anuncio-txt span { color: var(--muted); font-size: 14.5px; }
+.anuncio-btn {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px;
+  background: var(--ink); color: var(--bg); font-weight: 700; font-size: 14px; text-decoration: none;
+  max-width: 100%; overflow-wrap: anywhere;
+}
+.anuncio-btn:hover { opacity: .88; }
+.anuncio-regra { color: var(--faint); font-size: 12px; }
+
+@media (min-width: 1024px) {
+  .anuncio-faixa .anuncio-caixa { min-height: 110px; padding: 26px 28px 20px; }
+  .anuncio-faixa .anuncio-convite { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 28px; }
+  .anuncio-faixa .anuncio-regra { grid-column: 1 / -1; }
+  .anuncio-faixa .anuncio-txt strong { font-size: 1.35rem; }
+}
+
+@media print { .anuncio { display: none; } }
