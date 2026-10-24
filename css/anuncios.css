@@ -74,3 +74,5 @@
   font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
 .apoio-btn-2 { background: var(--surface-2); color: var(--ink); }
 .apoio-nota { font-size: 12.5px !important; }
+.anuncio-mail { color: var(--muted); font-size: 13.5px; font-weight: 600; overflow-wrap: anywhere; }
+@media (min-width: 1024px) { .anuncio-faixa .anuncio-mail { grid-column: 1 / -1; } }

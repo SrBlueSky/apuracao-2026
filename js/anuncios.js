@@ -83,7 +83,8 @@
     return '<div class="anuncio-convite">' +
       '<div class="anuncio-txt"><strong>Anuncie aqui</strong>' +
       "<span>Seu negócio para quem acompanha a apuração ao vivo.</span></div>" +
-      '<a class="anuncio-btn" href="' + mailto + '">' + CONTATO + "</a>" +
+      '<a class="anuncio-btn" href="anuncie.html">Ver espaços e preços</a>' +
+      '<a class="anuncio-mail" href="' + mailto + '">' + CONTATO + "</a>" +
       '<small class="anuncio-regra">Não aceitamos anúncios de candidatos, partidos ou campanhas.</small>' +
       "</div>";
   }
