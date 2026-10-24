@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apuração 2º Turno 2026</title>
+<meta name="description" content="Acompanhe ao vivo a apuração do 2º turno das eleições de 25 de outubro de 2026: Presidente, mapa por estado, governadores e números gerais. Site independente, com dados do TSE.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f5f3ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Apuração 2º Turno 2026">
+<meta property="og:description" content="Presidente, mapa por estado e governadores, ao vivo a partir das 17h (Brasília) de 25/10/2026. Site independente, com dados do TSE.">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@400;500;600;700;800&display=swap">
+<script>
+/* tema escolhido antes de pintar (evita "piscada") */
+(function(){try{var t=localStorage.getItem("tema");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}})();
+</script>
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+
+<div class="faixa-demo" id="faixaDemo" hidden role="status">
+  <strong>MODO DEMONSTRAÇÃO — dados falsos.</strong>
+  <span>Nada do que aparece aqui é resultado real.</span>
+  <a href="./">Sair da demonstração</a>
+</div>
+
+<header class="topo">
+  <div class="wrap topo-in">
+    <a class="marca" href="#presidente" aria-label="Apuração 2º Turno 2026 — início">
+      <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><rect x="3" y="4" width="12" height="24" rx="3" fill="var(--c13)"/><rect x="17" y="4" width="12" height="24" rx="3" fill="var(--c22)"/><rect x="14.4" y="2" width="3.2" height="28" rx="1.6" fill="var(--ink)"/></svg>
+      <span class="marca-txt">Apuração <b>2º turno</b> 2026</span>
+    </a>
+    <nav class="menu" aria-label="Seções da página">
+      <a href="#presidente">Presidente</a>
+      <a href="#mapa">Mapa</a>
+      <a href="#estados">Estados</a>
+      <a href="#governadores">Governadores</a>
+      <a href="#numeros">Números</a>
+    </nav>
+    <div class="topo-dir">
+      <span class="status" id="status" data-estado="conectando" role="status" aria-live="polite"><i></i><span id="statusTxt">Conectando ao TSE…</span></span>
+      <button class="btn-tema" id="btnTema" type="button" aria-label="Alternar entre tema claro e escuro" title="Alternar tema">
+        <svg class="ico-sol" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"/></g></svg>
+        <svg class="ico-lua" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ 1. PRESIDENTE ============ -->
+<section class="hero" id="presidente" aria-labelledby="tituloHero">
+  <div class="wrap">
+    <p class="kicker">Presidente da República <span aria-hidden="true">·</span> 2º turno <span aria-hidden="true">·</span> 25 de outubro de 2026</p>
+    <h1 id="tituloHero" class="hero-titulo">Apuração do <em>2º turno</em></h1>
+
+    <p class="hero-modo" id="heroModo" data-modo="antes"><span class="pilula" id="heroPilula">Referência · resultado do 1º turno</span></p>
+
+    <div class="duelo" id="duelo">
+      <article class="cand" data-n="13" id="cand13" aria-label="Lula">
+        <div class="foto" id="foto13"><span class="ini" aria-hidden="true">LU</span></div>
+        <div class="cand-corpo">
+          <h2 class="cand-nome">Lula</h2>
+          <p class="cand-sub"><span class="partido">PT</span> · vice Geraldo Alckmin (PSB)</p>
+          <p class="cand-pct"><span class="pct-num" id="pct13">0,00</span><span class="pct-sinal">%</span></p>
+          <p class="cand-votos"><b id="votos13">0</b> <span id="rot13">votos</span></p>
+          <p class="selo-eleito" id="eleito13" hidden>Eleito pelo TSE</p>
+        </div>
+      </article>
+      <div class="duelo-x" aria-hidden="true">×</div>
+      <article class="cand" data-n="22" id="cand22" aria-label="Flávio Bolsonaro">
+        <div class="foto" id="foto22"><span class="ini" aria-hidden="true">FB</span></div>
+        <div class="cand-corpo">
+          <h2 class="cand-nome">Flávio Bolsonaro</h2>
+          <p class="cand-sub"><span class="partido">PL</span> · vice Alfredo Gaspar (PL)</p>
+          <p class="cand-pct"><span class="pct-num" id="pct22">0,00</span><span class="pct-sinal">%</span></p>
+          <p class="cand-votos"><b id="votos22">0</b> <span id="rot22">votos</span></p>
+          <p class="selo-eleito" id="eleito22" hidden>Eleito pelo TSE</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="barra-bloco">
+      <div class="barra-dupla" id="barraHero" role="img" aria-label="Proporção de votos entre os dois candidatos">
+        <span class="seg seg13" id="seg13"></span><span class="seg segOutros" id="segOutros"></span><span class="seg seg22" id="seg22"></span>
+        <i class="tick50" aria-hidden="true"><em>50%</em></i>
+      </div>
+      <p class="barra-nota" id="barraNota">Barra: parcela de cada um nos votos válidos do 1º turno; cinza = demais candidatos.</p>
+    </div>
+
+    <p class="diferenca" id="heroDif" aria-live="polite">&nbsp;</p>
+    <p class="aviso-tse" id="heroEleito" hidden></p>
+
+    <div class="painel">
+      <div class="painel-bloco contagem" id="blocoContagem" hidden>
+        <p class="painel-rot">Divulgação dos resultados a partir das 17h (Brasília) de 25/10/2026</p>
+        <div class="relogio" id="relogio" role="timer" aria-label="Contagem regressiva">
+          <div><b id="cdDias">00</b><span>dias</span></div>
+          <div><b id="cdHoras">00</b><span>horas</span></div>
+          <div><b id="cdMin">00</b><span>min</span></div>
+          <div><b id="cdSeg">00</b><span>seg</span></div>
+        </div>
+      </div>
+      <div class="painel-bloco aguardando" id="blocoAguardando" hidden>
+        <p class="painel-rot">Aguardando os primeiros resultados</p>
+        <p class="painel-texto">O horário de divulgação já passou, mas o TSE ainda não publicou votos apurados. Esta página consulta o TSE a cada minuto.</p>
+      </div>
+      <div class="painel-bloco progresso">
+        <div class="prog-topo"><p class="painel-rot">Urnas apuradas</p><p class="prog-num"><b id="progPct">0,00</b>%</p></div>
+        <div class="trilho"><span class="trilho-fill" id="progBarra"></span></div>
+        <p class="painel-mini" id="progDet">0 de 499.248 seções totalizadas</p>
+        <p class="painel-mini" id="heroAtual">Aguardando o TSE</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. MAPA ============ -->
+<section class="secao" id="mapa" aria-labelledby="tituloMapa">
+  <div class="wrap">
+    <header class="sec-cab">
+      <div>
+        <p class="sec-kicker">Presidente por estado</p>
+        <h2 id="tituloMapa">Mapa do Brasil</h2>
+        <p class="sec-sub" id="mapaSub">Cada estado leva a cor de quem está à frente; quanto mais intensa, maior a vantagem.</p>
+      </div>
+      <div class="seg-ctl" role="group" aria-label="Qual turno mostrar no mapa" id="ctlMapa">
+        <button type="button" data-modo="2t" aria-pressed="true">2º turno ao vivo</button>
+        <button type="button" data-modo="1t" aria-pressed="false">1º turno</button>
+      </div>
+    </header>
+
+    <div class="mapa-grade">
+      <div class="mapa-col">
+        <div class="mapa-caixa" id="mapaBox" aria-live="off"></div>
+        <div class="mapa-extra">
+          <button type="button" class="chip-zz" id="chipZZ" data-uf="zz" aria-label="Exterior: ver detalhes"><span class="chip-zz-cor"></span>Exterior</button>
+          <span class="mapa-dica" id="mapaDica">Passe o mouse ou toque em um estado.</span>
+        </div>
+      </div>
+      <aside class="cartao" id="cartaoUF" aria-live="polite"></aside>
+    </div>
+    <div class="legenda" id="legenda" aria-label="Legenda do mapa"></div>
+  </div>
+</section>
+
+<!-- ============ 3. ESTADOS ============ -->
+<section class="secao" id="estados" aria-labelledby="tituloEstados">
+  <div class="wrap">
+    <header class="sec-cab">
+      <div>
+        <p class="sec-kicker">Presidente · 27 estados e exterior</p>
+        <h2 id="tituloEstados">Estado por estado</h2>
+        <p class="sec-sub">Linhas em tom apagado ainda não têm votos apurados: mostram, para referência, o resultado do 1º turno (marcado “1º T”).</p>
+      </div>
+    </header>
+    <div class="controles">
+      <div class="chips" role="group" aria-label="Ordenar estados" id="ctlOrdem">
+        <button type="button" data-ord="nome" aria-pressed="true">Nome</button>
+        <button type="button" data-ord="margem" aria-pressed="false">Maior vantagem</button>
+        <button type="button" data-ord="lula" aria-pressed="false">Lula</button>
+        <button type="button" data-ord="flavio" aria-pressed="false">Flávio</button>
+        <button type="button" data-ord="apuracao" aria-pressed="false">Apuração</button>
+        <button type="button" data-ord="eleitorado" aria-pressed="false">Eleitorado</button>
+      </div>
+      <label class="check"><input type="checkbox" id="chkRegiao"> <span>Agrupar por região</span></label>
+    </div>
+    <div class="uf-cab" aria-hidden="true">
+      <span>Estado</span><span>Divisão dos votos</span><span class="t13">Lula</span><span class="t22">Flávio</span><span>Vantagem</span><span>Apurado</span>
+    </div>
+    <ul class="ufs" id="listaUFs"></ul>
+  </div>
+</section>
+
+<!-- ============ 4. GOVERNADORES ============ -->
+<section class="secao" id="governadores" aria-labelledby="tituloGov">
+  <div class="wrap">
+    <header class="sec-cab">
+      <div>
+        <p class="sec-kicker">2º turno nos estados</p>
+        <h2 id="tituloGov">Governadores</h2>
+        <p class="sec-sub">Seis estados têm disputa de governador no 2º turno. As cores aqui só distinguem os dois candidatos de cada estado.</p>
+      </div>
+    </header>
+    <div class="gov-grade" id="govGrade"></div>
+  </div>
+</section>
+
+<!-- ============ 5. NÚMEROS GERAIS ============ -->
+<section class="secao" id="numeros" aria-labelledby="tituloNum">
+  <div class="wrap">
+    <header class="sec-cab">
+      <div>
+        <p class="sec-kicker">Brasil, presidente</p>
+        <h2 id="tituloNum">Números gerais</h2>
+        <p class="sec-sub" id="numSub">Comparecimento e votos que não escolhem candidato, com o 1º turno como régua.</p>
+      </div>
+    </header>
+    <div class="num-grade" id="numGrade"></div>
+  </div>
+</section>
+
+</main>
+
+<footer class="rodape">
+  <div class="wrap">
+    <p><strong>Site independente, sem vínculo com o TSE ou qualquer campanha.</strong> Fonte: TSE (<a href="https://resultados.tse.jus.br" target="_blank" rel="noopener noreferrer">resultados.tse.jus.br</a>). Os dados oficiais são os do TSE.</p>
+    <p class="rodape-mini">Os dados são lidos direto do TSE pelo seu navegador, sem intermediários, e podem atrasar alguns minutos em relação ao site oficial. O selo “Eleito” só aparece quando o próprio TSE o marca. Percentuais são de votos válidos. Referência do 1º turno: resultado final de 04/10/2026.</p>
+  </div>
+</footer>
+
+<script src="js/apuracao-core.js"></script>
+<script src="js/demo.js"></script>
+<script src="dados/primeiro-turno.js"></script>
+<script src="js/mapa-svg.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
