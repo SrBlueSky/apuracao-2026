@@ -626,3 +626,10 @@ h1, h2, h3, p { margin: 0; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* celular e tablet: marca e botões do topo maiores, fáceis de tocar */
+@media (max-width: 1023.98px) {
+  .marca svg { width: 38px; height: 38px; }
+  .btn-tema { width: 44px; height: 44px; }
+  .btn-tema svg { width: 22px; height: 22px; }
+}

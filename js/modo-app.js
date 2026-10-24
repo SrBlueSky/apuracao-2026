@@ -205,7 +205,7 @@
     var b = document.createElement("button");
     b.type = "button"; b.className = "btn-tema btn-ajustes"; b.id = "btnAjustes";
     b.setAttribute("aria-label", "Ajustes do app"); b.title = "Ajustes";
-    b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8zm8.2 4.6.1-1.2-.1-1.2 1.9-1.5a.5.5 0 0 0 .1-.6l-1.8-3.1a.5.5 0 0 0-.6-.2l-2.3.9a8 8 0 0 0-2-1.2l-.3-2.4a.5.5 0 0 0-.5-.4H10.4a.5.5 0 0 0-.5.4l-.3 2.4a8 8 0 0 0-2 1.2l-2.3-.9a.5.5 0 0 0-.6.2L3 8.7a.5.5 0 0 0 .1.6L5 10.8l-.1 1.2.1 1.2-1.9 1.5a.5.5 0 0 0-.1.6l1.8 3.1c.1.2.4.3.6.2l2.3-.9c.6.5 1.3.9 2 1.2l.3 2.4c0 .2.3.4.5.4h3.6c.2 0 .5-.2.5-.4l.3-2.4c.7-.3 1.4-.7 2-1.2l2.3.9c.2.1.5 0 .6-.2l1.8-3.1a.5.5 0 0 0-.1-.6z" fill="currentColor"/></svg>';
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill-rule="evenodd" d="M12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8zm8.2 4.6.1-1.2-.1-1.2 1.9-1.5a.5.5 0 0 0 .1-.6l-1.8-3.1a.5.5 0 0 0-.6-.2l-2.3.9a8 8 0 0 0-2-1.2l-.3-2.4a.5.5 0 0 0-.5-.4H10.4a.5.5 0 0 0-.5.4l-.3 2.4a8 8 0 0 0-2 1.2l-2.3-.9a.5.5 0 0 0-.6.2L3 8.7a.5.5 0 0 0 .1.6L5 10.8l-.1 1.2.1 1.2-1.9 1.5a.5.5 0 0 0-.1.6l1.8 3.1c.1.2.4.3.6.2l2.3-.9c.6.5 1.3.9 2 1.2l.3 2.4c0 .2.3.4.5.4h3.6c.2 0 .5-.2.5-.4l.3-2.4c.7-.3 1.4-.7 2-1.2l2.3.9c.2.1.5 0 .6-.2l1.8-3.1a.5.5 0 0 0-.1-.6z" fill="currentColor"/></svg>';
     b.addEventListener("click", function () { Site.irParaAba("ajustes"); });
     dir.insertBefore(b, tema);
   }
