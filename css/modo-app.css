@@ -1,0 +1,60 @@
+/* modo-app.css — estilos só do modo app (Radar, Ajustes, tabela de categorias). Carregado por js/modo-app.js. */
+
+/* semáforo na aba Radar */
+.rad-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; background: var(--faint); vertical-align: 1px; }
+.rad-dot[data-cor="verde"] { background: #1fa855; }
+.rad-dot[data-cor="amarelo"] { background: #e0a812; }
+.rad-dot[data-cor="vermelho"] { background: #e03131; }
+.abas-lista [role="tab"][aria-selected="true"] .rad-dot { box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg) 70%, transparent); }
+
+.radar-aviso { margin: 0 0 18px; padding: 14px 18px; border-radius: var(--raio); border: 1px solid var(--line); border-left: 5px solid #e0a812; background: var(--surface); font-size: 15px; line-height: 1.5; }
+.radar-grade { display: grid; gap: 14px; }
+.radar-sema { display: flex; align-items: center; gap: 18px; }
+.rad-bola { flex: none; width: 56px; height: 56px; border-radius: 50%; background: var(--faint); box-shadow: 0 0 0 6px color-mix(in srgb, var(--faint) 22%, transparent); }
+.radar-verde .rad-bola { background: #1fa855; box-shadow: 0 0 0 6px rgba(31, 168, 85, .2); }
+.radar-amarelo .rad-bola { background: #e0a812; box-shadow: 0 0 0 6px rgba(224, 168, 18, .22); }
+.radar-vermelho .rad-bola { background: #e03131; box-shadow: 0 0 0 6px rgba(224, 49, 49, .2); }
+.rad-cor { font-family: var(--serif); font-weight: 800; font-size: 2rem; letter-spacing: -.02em; line-height: 1.1; }
+.rad-exp { margin-top: 4px; color: var(--muted); font-size: 14.5px; }
+.radar-motivos ul, .radar-hist ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.mv { padding: 10px 14px; border-radius: 12px; font-size: 14.5px; background: var(--surface-2); border-left: 4px solid var(--faint); }
+.mv b { display: inline-block; margin-right: 8px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+.mv.crit { border-left-color: #e03131; } .mv.aten { border-left-color: #e0a812; } .mv.ok { border-left-color: #1fa855; }
+.radar-hist li { font-size: 14px; color: var(--muted); }
+.radar-tab, .radar-hist, .radar-vazio { margin-top: 14px; }
+.radar-nota { margin-top: 16px; font-size: 13.5px; color: var(--muted); max-width: 90ch; }
+.tab-rolagem { overflow-x: auto; margin-top: 10px; }
+.tabela-metricas { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.tabela-metricas th { text-align: left; font-size: 12.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.tabela-metricas td { padding: 10px; border-bottom: 1px solid var(--line); }
+.tabela-metricas td + td, .tabela-metricas th + th { text-align: right; }
+.tabela-metricas tr:last-child td { border-bottom: 0; }
+.not-cats { margin-bottom: 0; }
+
+/* ajustes */
+.ajustes-grade { display: grid; gap: 14px; max-width: 760px; }
+.ajustes-bloco h3 { margin-bottom: 8px; }
+.ajuste { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); cursor: pointer; min-height: 56px; }
+.ajuste:first-of-type { border-top: 0; }
+.aj-txt b { display: block; font-size: 16px; }
+.aj-txt small { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+.ajuste input { position: absolute; opacity: 0; width: 52px; height: 32px; right: 0; margin: 0; cursor: pointer; }
+.aj-chave { flex: none; width: 52px; height: 32px; border-radius: 99px; background: var(--outros); position: relative; transition: background .2s; }
+.aj-chave::after { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .3); transition: transform .2s; }
+.ajuste input:checked + .aj-chave { background: #1fa855; }
+.ajuste input:checked + .aj-chave::after { transform: translateX(20px); }
+.ajuste input:focus-visible + .aj-chave { outline: 2px solid var(--c22); outline-offset: 2px; }
+.ajuste.desativado { opacity: .5; cursor: not-allowed; }
+.aj-campo { display: grid; gap: 8px; font-size: 14.5px; }
+.aj-campo select { min-height: 48px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 16px; }
+.aj-nota { margin-top: 10px; font-size: 13.5px; color: var(--muted); }
+.aj-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 10px; }
+
+@media (min-width: 1024px) {
+  .radar-grade { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 20px; align-items: start; }
+  .radar-sema { padding: 28px; }
+  .rad-bola { width: 72px; height: 72px; }
+  .rad-cor { font-size: 2.6rem; }
+  .ajustes-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: none; gap: 20px; align-items: start; }
+  .ajustes-bloco { padding: 24px; }
+}

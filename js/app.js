@@ -6,7 +6,7 @@
 (function () {
   "use strict";
 
-  var C = window.ApuracaoCore, D = window.ApuracaoDemo;
+  var C = window.ApuracaoCore, D = window.ApuracaoDemo, Evo = window.Evolucao, Not = window.Noticias;
   var PT = window.PRIMEIRO_TURNO || { presidente: {}, governador: {} };
   var esc = C.escapeHtml;
 
@@ -18,13 +18,26 @@
   var AGORA_FIXO = qs.get("agora") ? Date.parse(qs.get("agora")) : NaN;
   function agoraMs() { return isFinite(AGORA_FIXO) ? AGORA_FIXO : Date.now(); }
 
+  // Modo app: dentro do app Android (AndroidBridge) ou, para testar no PC, com ?app=1.
+  // Nele, js/modo-app.js (e os módulos de ../js/) acrescenta Radar, Notícias completas, Ajustes e o aviso de versão.
+  var APP = !!window.AndroidBridge || qs.get("app") === "1";
+  // Em modo app o TSE é buscado pelo proxy do app (em file:// a origem é "null" e o CORS bloquearia).
+  function urlRede(u) {
+    return (APP && window.News && typeof window.News.proxied === "function") ? window.News.proxied(u) : u;
+  }
+  function abrirExterno(url) {
+    var b = window.AndroidBridge;
+    if (b && typeof b.openExternal === "function") { try { b.openExternal(url); return; } catch (e) { /* cai no fallback */ } }
+    window.open(url, "_blank", "noopener");
+  }
+
   var REDUZ = false;
   try { REDUZ = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
 
   var S = {
     br: null, ufs: {}, gov: {}, vis: {},
     okBr: 0, falhasBr: 0, okEst: 0,
-    mapaModo: "2t", ordem: "nome", agrupar: false,
+    mapaModo: "2t", ordem: "nome", agrupar: false, regiao: "",
     fixado: null, hover: null, ordemChave: "",
     linhas: {}, govEls: {}, demoInicio: (typeof performance !== "undefined" ? performance.now() : 0)
   };
@@ -113,6 +126,7 @@
     $("blocoContagem").hidden = modo !== "antes";
     $("blocoAguardando").hidden = modo !== "aguardando";
     document.querySelector(".painel").classList.toggle("dois", modo !== "vivo");
+    document.querySelector(".hero-grade").classList.toggle("dois", modo !== "vivo");
     animNum($("progPct"), d.pst, d2);
     setW($("progBarra"), d.pst);
     setTxt($("progDet"), d.secTot > 0 ? C.fmtInt(d.secApur) + " de " + C.fmtInt(d.secTot) + " seções totalizadas" : "Aguardando o TSE");
@@ -162,8 +176,8 @@
     return { l: null, b: 0 };
   }
 
-  function pintar(node, v) {
-    var x = lideranca(v, S.mapaModo);
+  function pintar(node, v, modo) {
+    var x = lideranca(v, modo || S.mapaModo);
     if (x.l) { node.dataset.l = x.l; node.dataset.b = String(Math.max(1, x.b)); }
     else { delete node.dataset.l; delete node.dataset.b; }
   }
@@ -181,6 +195,7 @@
     if (sel) { var p = box.querySelector('path[data-uf="' + sel + '"]'); if (p) p.classList.add("sel"); }
     $("chipZZ").classList.toggle("sel", sel === "zz");
     renderCartao();
+    renderRankUF();
   }
 
   function construirLegenda() {
@@ -263,7 +278,7 @@
   function alternarFixo(uf) {
     S.fixado = S.fixado === uf ? null : uf;
     renderMapa();
-    if (S.fixado && window.matchMedia && window.matchMedia("(max-width: 899px)").matches) {
+    if (S.fixado && window.matchMedia && window.matchMedia("(max-width: 1023px)").matches) {
       $("cartaoUF").scrollIntoView({ block: "nearest", behavior: REDUZ ? "auto" : "smooth" });
     }
   }
@@ -304,7 +319,7 @@
     chip.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") setHover(null); });
     // toque/clique fora fecha o cartão fixado
     document.addEventListener("click", function (e) {
-      if (S.fixado && !e.target.closest("#mapaBox, #cartaoUF, #chipZZ, #ctlMapa")) { S.fixado = null; renderMapa(); }
+      if (S.fixado && !e.target.closest("#mapaBox, .mapa-lateral, #chipZZ, #ctlMapa, .dest-grade")) { S.fixado = null; renderMapa(); }
     });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && S.fixado) { S.fixado = null; renderMapa(); } });
     $("ctlMapa").addEventListener("click", function (e) {
@@ -352,6 +367,12 @@
       renderLista();
     });
     $("chkRegiao").addEventListener("change", function (e) { S.agrupar = e.target.checked; S.ordemChave = ""; renderLista(); });
+    $("ctlRegiao").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-reg]"); if (!b) return;
+      S.regiao = b.dataset.reg;
+      $("ctlRegiao").querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      S.ordemChave = ""; renderLista();
+    });
   }
 
   function renderLista() {
@@ -379,12 +400,14 @@
       setW(L.trilho, d.pst);
     });
 
+    if (S.regiao) vis = vis.filter(function (v) { return v.info.regiao === S.regiao; });
     var ord = C.ordenarUFs(vis, S.ordem);
-    var chave = S.ordem + "|" + S.agrupar + "|" + ord.map(function (v) { return v.uf; }).join(",");
+    var chave = S.ordem + "|" + S.agrupar + "|" + S.regiao + "|" + ord.map(function (v) { return v.uf; }).join(",");
     if (chave === S.ordemChave) return;
     S.ordemChave = chave;
     var ul = $("listaUFs");
     ul.querySelectorAll("li.reg").forEach(function (n) { n.remove(); });
+    C.UFS.forEach(function (uf) { S.linhas[uf].li.hidden = !!S.regiao && C.UF_INFO[uf].regiao !== S.regiao; });
     var frag = document.createDocumentFragment();
     if (S.agrupar) {
       C.REGIOES.forEach(function (reg) {
@@ -535,6 +558,360 @@
   }
 
   // =====================================================================
+  // ABAS (hash da URL: #presidente #mapa #evolucao #estados #governadores #noticias; app: #radar #ajustes)
+  // =====================================================================
+  var abaAtual = null, aoMostrar = {};
+
+  function painelDe(nome) { return nome ? $("painel-" + nome) : null; }
+  function abaDoHash() {
+    var h = "";
+    try { h = decodeURIComponent((location.hash || "").replace(/^#/, "")).toLowerCase(); } catch (e) { h = ""; }
+    if (h === "numeros") h = "presidente";          // âncora da versão antiga (página longa)
+    return painelDe(h) ? h : "presidente";
+  }
+  function botoesAbas() { return Array.prototype.slice.call($("abasLista").querySelectorAll('[role="tab"]')); }
+
+  function ativarAba(nome, rolar) {
+    if (!painelDe(nome)) nome = "presidente";
+    var mudou = nome !== abaAtual;
+    abaAtual = nome;
+    Array.prototype.forEach.call(document.querySelectorAll(".aba-painel"), function (p) { p.hidden = p.dataset.aba !== nome; });
+    var achou = false;
+    botoesAbas().forEach(function (b, i) {
+      var sel = b.dataset.aba === nome;
+      if (sel) achou = true;
+      b.setAttribute("aria-selected", String(sel));
+      b.setAttribute("tabindex", sel ? "0" : "-1");
+    });
+    if (!achou) { var b0 = botoesAbas()[0]; if (b0) b0.setAttribute("tabindex", "0"); }   // aba "oculta" (Ajustes): mantém a lista alcançável
+    var btn = $("tab-" + nome), lista = $("abasLista");
+    if (btn && lista && lista.scrollWidth > lista.clientWidth) {
+      lista.scrollTo({ left: Math.max(0, btn.offsetLeft - (lista.clientWidth - btn.offsetWidth) / 2), behavior: REDUZ ? "auto" : "smooth" });
+    }
+    if (mudou) {
+      if (rolar) window.scrollTo(0, 0);
+      if (aoMostrar[nome]) { try { aoMostrar[nome](); } catch (e) { console.error("aba", nome, e); } }
+    }
+  }
+  function irParaAba(nome) {
+    if ((location.hash || "").replace(/^#/, "") === nome) ativarAba(nome, true);
+    else location.hash = nome;                       // dispara hashchange; o botão "voltar" volta à aba anterior
+  }
+  function iniciarAbas() {
+    window.addEventListener("hashchange", function () { ativarAba(abaDoHash(), true); });
+    var lista = $("abasLista");
+    lista.addEventListener("click", function (e) {
+      var b = e.target.closest('[role="tab"]'); if (b) irParaAba(b.dataset.aba);
+    });
+    lista.addEventListener("keydown", function (e) {
+      var bs = botoesAbas(), i = bs.indexOf(document.activeElement);
+      if (i < 0) return;
+      var j = -1;
+      if (e.key === "ArrowRight") j = (i + 1) % bs.length;
+      else if (e.key === "ArrowLeft") j = (i - 1 + bs.length) % bs.length;
+      else if (e.key === "Home") j = 0;
+      else if (e.key === "End") j = bs.length - 1;
+      if (j < 0) return;
+      e.preventDefault(); bs[j].focus(); irParaAba(bs[j].dataset.aba);
+    });
+    // botões "ir para a aba X" espalhados pela página
+    document.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest("[data-ir]"); if (b) irParaAba(b.dataset.ir);
+    });
+    ativarAba(abaDoHash(), false);
+  }
+  // Cria uma aba extra (usada pelo modo app: Radar, Ajustes). oculta = sem botão na barra.
+  function criarAba(o) {
+    if (painelDe(o.nome)) return painelDe(o.nome);
+    var sec = document.createElement("section");
+    sec.className = "aba-painel secao"; sec.id = "painel-" + o.nome; sec.dataset.aba = o.nome; sec.hidden = true;
+    sec.setAttribute("role", "tabpanel"); sec.setAttribute("tabindex", "0");
+    sec.innerHTML = '<div class="wrap"></div>';
+    if (!o.oculta) {
+      sec.setAttribute("aria-labelledby", "tab-" + o.nome);
+      var b = document.createElement("button");
+      b.type = "button"; b.setAttribute("role", "tab"); b.id = "tab-" + o.nome; b.dataset.aba = o.nome;
+      b.setAttribute("aria-controls", "painel-" + o.nome); b.setAttribute("aria-selected", "false"); b.setAttribute("tabindex", "-1");
+      b.textContent = o.rotulo;
+      var ref = o.depoisDe ? $("tab-" + o.depoisDe) : null;
+      if (ref && ref.nextSibling) ref.parentNode.insertBefore(b, ref.nextSibling); else $("abasLista").appendChild(b);
+    } else sec.setAttribute("aria-label", o.rotulo);
+    $("conteudo").appendChild(sec);
+    return sec;
+  }
+
+  // =====================================================================
+  // DESTAQUES (aba Presidente): mini-mapa e maiores vantagens
+  // =====================================================================
+  function modoDestaque() {
+    for (var i = 0; i < C.UFS.length; i++) { var v = S.vis[C.UFS[i]]; if (v && v.d.temVotos) return "2t"; }
+    return "1t";
+  }
+  function margemUF(v, modo) { return modo === "1t" ? v.refMargemPP : v.d.margemPP; }
+
+  function construirMiniMapa() {
+    var box = $("miniMapa");
+    if (!window.MAPA_SVG) { box.parentNode.hidden = true; return; }
+    box.innerHTML = window.MAPA_SVG;
+    box.querySelectorAll("path").forEach(function (p) {
+      var uf = COD2UF[p.id];
+      p.removeAttribute("id");                       // ids duplicados com o mapa grande
+      if (uf) p.dataset.uf = uf;
+    });
+    var svg = box.querySelector("svg");
+    if (svg) { svg.removeAttribute("role"); svg.removeAttribute("aria-label"); svg.setAttribute("aria-hidden", "true"); }
+    box.addEventListener("click", function (e) {
+      var p = e.target.closest && e.target.closest("path[data-uf]");
+      if (p) abrirUFnoMapa(p.dataset.uf);
+    });    ["rank13", "rank22"].forEach(function (id) {
+      $(id).addEventListener("click", function (e) {
+        var b = e.target.closest && e.target.closest("button[data-uf]");
+        if (b) abrirUFnoMapa(b.dataset.uf);
+      });
+    });
+    $("rankUFs").addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest("button[data-uf]");
+      if (b) { e.stopPropagation(); alternarFixo(b.dataset.uf); }   // o clique não pode chegar ao "clicou fora" (a lista é refeita e o botão sai do DOM)
+    });
+  }
+  function abrirUFnoMapa(uf) {
+    S.fixado = uf; renderMapa(); irParaAba("mapa");
+  }
+
+  function linhaRank(uf, v, modo, max) {
+    var pp = margemUF(v, modo), w = max > 0 ? Math.max(4, 100 * pp / max) : 0;
+    return '<li><button type="button" class="rank-lin" data-uf="' + uf + '"><span class="rk-nome">' + esc(v.info.nome) + '</span>' +
+      '<span class="rk-bar"><i style="width:' + w.toFixed(1) + '%"></i></span><b>+' + d2(pp) + ' p.p.</b></button></li>';
+  }
+  function renderDestaques() {
+    var modo = modoDestaque();
+    var por = { "13": [], "22": [] };
+    C.UFS.forEach(function (uf) {
+      if (uf === "zz") return;
+      var v = S.vis[uf]; if (!v) return;
+      var x = lideranca(v, modo);
+      if (x.l) por[x.l].push({ uf: uf, v: v, pp: margemUF(v, modo) });
+    });
+    ["13", "22"].forEach(function (k) {
+      var arr = por[k].sort(function (a, b) { return b.pp - a.pp || a.v.info.nome.localeCompare(b.v.info.nome, "pt-BR"); }).slice(0, 6);
+      var max = arr.length ? arr[0].pp : 0;
+      setHtml($("rank" + k), arr.length ? arr.map(function (r) { return linhaRank(r.uf, r.v, modo, max); }).join("") :
+        '<li class="rank-vazio">' + (modo === "2t" ? "Nenhum estado com " + esc(nomePres(k)) + " à frente até aqui." : "Sem dados.") + "</li>");
+    });
+    setTxt($("destSub"), modo === "2t"
+      ? "Os estados onde cada candidato tem a maior vantagem agora, entre os que já têm votos apurados. Toque em um estado para ver os detalhes no mapa."
+      : "Ainda sem votos apurados no 2º turno: a lista mostra o 1º turno (04/10) como referência. Toque em um estado para ver os detalhes no mapa.");
+    $("miniMapa").querySelectorAll("path[data-uf]").forEach(function (p) { if (S.vis[p.dataset.uf]) pintar(p, S.vis[p.dataset.uf], modo); });
+  }
+
+  // Ranking dos estados (aba Mapa, só no desktop): líder e vantagem de cada UF, no turno escolhido no mapa
+  function renderRankUF() {
+    var ol = $("rankUFs"); if (!ol) return;
+    var modo = S.mapaModo, itens = [];
+    C.UFS.forEach(function (uf) {
+      var v = S.vis[uf]; if (!v) return;
+      var x = lideranca(v, modo);
+      itens.push({ uf: uf, v: v, l: x.l, pp: x.l ? margemUF(v, modo) : -1 });
+    });
+    var algum = itens.some(function (i) { return !!i.l; });
+    itens.sort(function (a, b) { return (b.pp - a.pp) || a.v.info.nome.localeCompare(b.v.info.nome, "pt-BR"); });
+    setTxt($("rankUfNota"), algum ? "por vantagem" : "sem votos ainda");
+    setHtml(ol, itens.map(function (i) {
+      var sel = S.fixado === i.uf;
+      return '<li><button type="button" class="rank-lin' + (sel ? " sel" : "") + '" data-uf="' + i.uf + '"' + (sel ? ' aria-current="true"' : "") + '>' +
+        '<span class="rk-pt' + (i.l ? " c" + i.l : "") + '"></span><span class="rk-nome">' + esc(i.v.info.nome) + '</span>' +
+        (i.l ? '<b class="c' + i.l + '">' + esc(C.PRES[i.l].curto) + " +" + d2(i.pp) + "</b>" : '<b class="mut">—</b>') + "</button></li>";
+    }).join(""));
+  }
+
+  // =====================================================================
+  // EVOLUÇÃO (aba): % de votos válidos × % de urnas apuradas
+  // =====================================================================
+  var EVO = { serie: [], demoT: -1, largura: 0, tamanho: -1, sel: -1 };
+  function evoCarregar() {
+    if (DEMO || !Evo) return;
+    try { EVO.serie = Evo.lerSerie(localStorage.getItem(Evo.CHAVE)); } catch (e) { EVO.serie = []; }   // sem storage: só na sessão
+  }
+  function evoSalvar() {
+    if (DEMO) return;                                  // dados falsos nunca vão para o armazenamento
+    try { localStorage.setItem(Evo.CHAVE, JSON.stringify(EVO.serie)); } catch (e) { /* sem storage: segue só na sessão */ }
+  }
+  function evoVisivel() { var p = $("painel-evolucao"); return !!p && !p.hidden; }
+  // chamado a cada render geral: guarda ponto novo (real) ou refaz a série (demo)
+  function evoAtualizar() {
+    if (!Evo) return;
+    if (DEMO) {
+      if (!evoVisivel()) return;                        // série da demo só é montada quando alguém olha
+      var t = S.demoT !== undefined && S.demoT !== null ? Math.round(S.demoT * 100) / 100 : 0;
+      if (t !== EVO.demoT) { EVO.demoT = t; EVO.serie = Evo.serieDemo(D, C, PT, t, 30); EVO.tamanho = -1; }
+    } else if (S.br) {
+      var p = Evo.ponto(S.br, C.visaoNacional(S.br, PT).d);
+      if (p && Evo.adicionar(EVO.serie, p)) { evoSalvar(); EVO.tamanho = -1; }
+    }
+    if (evoVisivel()) renderEvolucao();
+  }
+
+  function fmtCompacto(v) {
+    var a = Math.abs(v), s;
+    if (a >= 1e6) s = C.fmtDec(a / 1e6, a >= 1e7 ? 0 : 1) + " mi";
+    else if (a >= 1e3) s = C.fmtDec(a / 1e3, 0) + " mil";
+    else s = C.fmtInt(a);
+    return (v < 0 ? "−" : v > 0 ? "+" : "") + s;
+  }
+
+  function renderEvolucao() {
+    var serie = EVO.serie, vazio = serie.length === 0, ult = serie[serie.length - 1];
+    $("evoVazio").hidden = !vazio; $("evoCorpo").hidden = vazio;
+    setTxt($("evoP13"), ult ? C.fmtPct(ult.a) : "—");
+    setTxt($("evoP22"), ult ? C.fmtPct(ult.b) : "—");
+    setTxt($("evoV13"), ult ? C.fmtInt(ult.va) + " votos" : "");
+    setTxt($("evoV22"), ult ? C.fmtInt(ult.vb) + " votos" : "");
+    if (ult && ult.dif !== 0) setTxt($("evoDifTxt"), C.PRES[ult.dif > 0 ? "13" : "22"].curto + " +" + C.fmtInt(Math.abs(ult.dif)));
+    else setTxt($("evoDifTxt"), ult ? "Empate" : "—");
+    setTxt($("evoDifDet"), ult ? "votos de vantagem, com " + C.fmtPct(ult.x) + " das urnas apuradas" : "Aparece com a primeira totalização.");
+    setTxt($("evoN"), String(serie.length));
+    setTxt($("evoNDet"), DEMO ? "Série de demonstração, refeita a cada atualização; não é guardada." : "Os pontos ficam guardados neste aparelho, só neste navegador.");
+    if (!vazio) desenharEvolucao();
+  }
+
+  function svgTxt(x, y, txt, cls, anc) {
+    return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" class="' + cls + '"' + (anc ? ' text-anchor="' + anc + '"' : "") + ">" + esc(txt) + "</text>";
+  }
+
+  // desenha um gráfico de linhas dentro de `el`. cfg: {ys:[{cls, f(p)}], faixa:{min,max}, fmtY(v), ticksY:[...], zero:valor, altura}
+  function grafico(el, serie, cfg) {
+    var W = el.clientWidth;
+    if (!W) return null;                                  // painel escondido: recalcula quando abrir
+    var H = cfg.altura, m = { l: 62, r: 16, t: 12, b: 36 };
+    var fx = Evo.escala(0, 100, m.l, W - m.r), fy = Evo.escala(cfg.faixa.min, cfg.faixa.max, H - m.b, m.t);
+    var h = '<svg class="evo-svg" viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(cfg.rotulo) + '">';
+    cfg.ticksY.forEach(function (v) {
+      var y = fy(v);
+      h += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '" class="g-grade' + (v === cfg.destaque ? " g-meio" : "") + '"/>';
+      h += svgTxt(m.l - 8, y + 4, cfg.fmtY(v), "g-eixo", "end");
+    });
+    Evo.ticks(0, 100, W < 520 ? 5 : 10).forEach(function (v) {
+      var x = fx(v);
+      h += '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + m.t + '" y2="' + (H - m.b) + '" class="g-grade g-vert"/>';
+      h += svgTxt(x, H - m.b + 18, v + "%", "g-eixo", "middle");
+    });
+    h += svgTxt((m.l + W - m.r) / 2, H - 3, "Urnas apuradas", "g-tit", "middle");
+    cfg.ys.forEach(function (s) {
+      var d = Evo.caminho(serie, function (p) { return fx(p.x); }, function (p) { return fy(s.f(p)); });
+      h += '<path d="' + d + '" class="g-linha ' + s.cls + '"/>';
+    });
+    var passo = serie.length > 80 ? Math.ceil(serie.length / 80) : 1;
+    serie.forEach(function (p, i) {
+      if (i % passo && i !== serie.length - 1) return;
+      cfg.ys.forEach(function (s) {
+        var ptCls = cfg.corPonto ? cfg.corPonto(p) : s.cls;
+        h += '<circle cx="' + fx(p.x).toFixed(1) + '" cy="' + fy(s.f(p)).toFixed(1) + '" r="' + (i === serie.length - 1 ? 5 : 3) + '" class="g-pt ' + ptCls + '"/>';
+      });
+    });
+    h += '<line class="g-cursor" x1="0" x2="0" y1="' + m.t + '" y2="' + (H - m.b) + '" visibility="hidden"/>';
+    h += '<rect class="g-alvo" x="' + m.l + '" y="' + m.t + '" width="' + Math.max(1, W - m.l - m.r) + '" height="' + (H - m.t - m.b) + '"/>';
+    el.innerHTML = h + "</svg>";
+    return { W: W, m: m, fx: fx, svg: el.firstChild };
+  }
+
+  function desenharEvolucao() {
+    var serie = EVO.serie, W = $("evoGraf").clientWidth;
+    if (!W) return;
+    if (W === EVO.largura && serie.length === EVO.tamanho) return;
+    EVO.largura = W; EVO.tamanho = serie.length;
+    var alt = Math.max(250, Math.min(440, Math.round(W * 0.5)));
+    var fy = Evo.faixaPct(serie);
+    var g1 = grafico($("evoGraf"), serie, {
+      altura: alt, faixa: fy, ticksY: Evo.ticks(fy.min, fy.max, 5), destaque: 50, fmtY: function (v) { return v + "%"; },
+      rotulo: "Porcentagem de votos válidos de Lula e de Flávio Bolsonaro conforme as urnas são apuradas",
+      ys: [{ cls: "s13", f: function (p) { return p.a; } }, { cls: "s22", f: function (p) { return p.b; } }]
+    });
+    var fd = Evo.faixaDif(serie);
+    var g2 = grafico($("evoDif"), serie, {
+      altura: Math.round(alt * 0.62), faixa: fd, ticksY: Evo.ticks(fd.min, fd.max, 4), destaque: 0, fmtY: fmtCompacto,
+      rotulo: "Diferença de votos entre Lula e Flávio Bolsonaro conforme as urnas são apuradas",
+      ys: [{ cls: "sdif", f: function (p) { return p.dif; } }],
+      corPonto: function (p) { return p.dif >= 0 ? "s13" : "s22"; }
+    });
+    [g1, g2].forEach(function (g) {
+      if (!g) return;
+      var cur = g.svg.querySelector(".g-cursor");
+      function mover(e) {
+        var r = g.svg.getBoundingClientRect(); if (!r.width) return;
+        var x = (e.clientX - r.left) * (g.W / r.width), melhor = -1, dist = 1e9;
+        serie.forEach(function (p, i) { var d = Math.abs(g.fx(p.x) - x); if (d < dist) { dist = d; melhor = i; } });
+        if (melhor < 0) return;
+        var p = serie[melhor], cx = g.fx(p.x).toFixed(1);
+        [g1, g2].forEach(function (o) { if (!o) return; var c = o.svg.querySelector(".g-cursor"); c.setAttribute("x1", cx); c.setAttribute("x2", cx); c.setAttribute("visibility", "visible"); });
+        setTxt($("evoSel"), "Com " + C.fmtPct(p.x) + " das urnas apuradas: Lula " + C.fmtPct(p.a) + " · Flávio " + C.fmtPct(p.b) + " · " +
+          (p.dif === 0 ? "empate" : C.PRES[p.dif > 0 ? "13" : "22"].curto + " à frente por " + C.fmtInt(Math.abs(p.dif)) + " votos") + " (totalização de " + p.k.slice(0, 5) + " às " + p.k.slice(11, 16) + ")");
+      }
+      g.svg.addEventListener("pointermove", mover);
+      g.svg.addEventListener("pointerdown", mover);
+      g.svg.addEventListener("pointerleave", function (e) {
+        if (e.pointerType === "mouse") { [g1, g2].forEach(function (o) { if (o) o.svg.querySelector(".g-cursor").setAttribute("visibility", "hidden"); }); setTxt($("evoSel"), EVO_DICA); }
+      });
+    });
+    setTxt($("evoSel"), EVO_DICA);
+  }
+  var EVO_DICA = "Passe o mouse (ou toque) sobre o gráfico para ver cada totalização.";
+
+  // =====================================================================
+  // NOTÍCIAS (aba): manchetes + links
+  // =====================================================================
+  var NOT = { itens: [], estado: "carregando", fonte: "Agência Brasil", iniciou: false };
+
+  function fmtQuando(d) {
+    if (!d || isNaN(d.getTime())) return "";
+    try { return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).replace(",", ""); } catch (e) { return ""; }
+  }
+  function renderNoticias() {
+    var ul = $("listaNot");
+    var h = NOT.itens.map(function (it) {
+      var novo = it.quando && Date.now() - it.quando.getTime() < 20 * 60 * 1000;
+      return '<li' + (novo ? ' class="nova"' : "") + "><span class=\"not-meta\"><time>" + esc(fmtQuando(it.quando)) + "</time>" + (it.fonte ? " · <span>" + esc(it.fonte) + "</span>" : "") + "</span>" +
+        '<a href="' + esc(it.link) + '" target="_blank" rel="noopener noreferrer">' + esc(it.titulo) + "</a></li>";
+    }).join("");
+    setHtml(ul, h);
+    setTxt($("notFonte"), NOT.fonte);
+    var msg = NOT.estado === "carregando" ? "Carregando as manchetes…" :
+      NOT.estado === "falha" ? "Não foi possível carregar as manchetes agora. Use os links ao lado para acompanhar nos veículos e no X." :
+      NOT.estado === "vazio" ? "Nenhuma manchete sobre as eleições no feed neste momento." : "";
+    var est = $("notEstado"); setTxt(est, msg); est.hidden = !msg;
+  }
+  function grupoLinks(titulo, lista, nota) {
+    return '<section class="cartao-g not-grupo"><h3>' + esc(titulo) + "</h3>" + (nota ? '<p class="not-nota">' + esc(nota) + "</p>" : "") + '<ul class="links-grade">' +
+      lista.map(function (l) { return '<li><a href="' + esc(l[1]) + '" target="_blank" rel="noopener noreferrer">' + esc(l[0]) + '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3h7v7M13 3 5 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>'; }).join("") +
+      "</ul></section>";
+  }
+  function construirLinksNoticias() {
+    if (!Not) return;
+    $("notLinks").innerHTML =
+      grupoLinks("Outros veículos", Not.LINKS_VEICULOS) +
+      grupoLinks("Checagem de fatos", Not.LINKS_CHECAGEM, "Para conferir boatos sobre a votação e a apuração.") +
+      grupoLinks("No X", Not.LINKS_X, "Abre no X (Twitter), em outra página.") +
+      grupoLinks("Fontes oficiais", Not.LINKS_OFICIAIS);
+  }
+  function buscarNoticiasPublico() {
+    if (!Not) return Promise.resolve();
+    var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var to = setTimeout(function () { if (ctrl) ctrl.abort(); }, 12000);
+    return fetch(Not.FEED_AGENCIA_BRASIL, { cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+      .then(function (xml) {
+        clearTimeout(to);
+        NOT.itens = Not.filtrar(Not.parseRss(xml, "Agência Brasil"), Not.PALAVRAS, 14);
+        NOT.estado = NOT.itens.length ? "ok" : "vazio";
+      }, function () { clearTimeout(to); if (!NOT.itens.length) NOT.estado = "falha"; })
+      .then(renderNoticias);
+  }
+  function iniciarNoticiasPublico() {
+    if (NOT.iniciou || APP) return;
+    NOT.iniciou = true;
+    ciclo("noticias", 5 * 60 * 1000, buscarNoticiasPublico);
+  }
+
+  // =====================================================================
   // RENDER GERAL
   // =====================================================================
   var rodouRender = false;
@@ -551,7 +928,10 @@
     try { renderLista(); } catch (e) { console.error("lista", e); }
     try { renderGov(); } catch (e) { console.error("gov", e); }
     try { renderNumeros(); } catch (e) { console.error("numeros", e); }
+    try { renderDestaques(); } catch (e) { console.error("destaques", e); }
+    try { evoAtualizar(); } catch (e) { console.error("evolucao", e); }
     renderStatus();
+    Site.hooks.forEach(function (fn) { try { fn(); } catch (e) { console.error("gancho", e); } });
   }
 
   // =====================================================================
@@ -560,7 +940,7 @@
   function buscarTSE(ele, cargo, uf) {
     var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
     var to = setTimeout(function () { if (ctrl) ctrl.abort(); }, 15000);
-    return fetch(C.urlDados(ele, cargo, uf), { cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
+    return fetch(urlRede(C.urlDados(ele, cargo, uf)), { cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
       .then(function (txt) {
         var d = C.adaptarFormato2026(C.decodificarJws(txt));
@@ -618,7 +998,7 @@
   function demoRodar() {
     var t = DEMO_T !== null ? DEMO_T : D.progressoPorTempo(performance.now() - S.demoInicio + 20000);
     var g = D.gerar(PT, t);
-    S.br = g.br; S.ufs = g.ufs; S.gov = g.gov; S.okBr = Date.now();
+    S.br = g.br; S.ufs = g.ufs; S.gov = g.gov; S.okBr = Date.now(); S.demoT = t;
     renderTudo();
   }
 
@@ -644,19 +1024,84 @@
       var p = C.PRES[k];
       $("foto" + k).innerHTML = htmlFoto(C.urlFoto(C.ELE.pres2, "br", p.sqcand), C.iniciais(p.nome), "Foto de " + p.nome);
     });
-    montarMapa(); construirLegenda(); construirLista(); construirGov(); construirNumeros(); iniciarTema();
+    montarMapa(); construirMiniMapa(); construirLegenda(); construirLista(); construirGov(); construirNumeros(); iniciarTema();
+    construirLinksNoticias(); renderNoticias();
+    aoMostrar.evolucao = function () { EVO.tamanho = -1; evoAtualizar(); renderEvolucao(); };
+    aoMostrar.noticias = iniciarNoticiasPublico;
+    evoCarregar();
     renderTudo(); tickRelogio();
     setInterval(function () { tickRelogio(); renderStatus(); if (!DEMO) renderHeroModoSeMudou(); }, 1000);
-    if (DEMO) {
-      $("faixaDemo").hidden = false;
-      document.title = "[DEMO] Apuração 2º Turno 2026";
-      demoRodar();
-      if (DEMO_T === null) setInterval(demoRodar, 2500);
-    } else {
-      ciclo("br", 60000, atualizarBR);
-      ciclo("estados", 120000, atualizarEstados);
-    }
+    iniciarAbas();
+    if ("ResizeObserver" in window) {
+      var ro = new ResizeObserver(function () { if (evoVisivel()) desenharEvolucao(); });
+      ro.observe($("evoGraf"));
+    } else window.addEventListener("resize", function () { if (evoVisivel()) desenharEvolucao(); });
+
+    // No modo app, espera os módulos do app (proxy, radar...) antes da primeira busca ao TSE
+    var pronto = APP ? prepararModoApp() : Promise.resolve();
+    pronto.then(function () {
+      ativarAba(abaDoHash(), false);                 // #radar / #ajustes só existem depois do modo app
+      if (DEMO) {
+        $("faixaDemo").hidden = false;
+        document.title = "[DEMO] Apuração 2º Turno 2026";
+        demoRodar();
+        if (DEMO_T === null) setInterval(demoRodar, 2500);
+      } else {
+        ciclo("br", 60000, atualizarBR);
+        ciclo("estados", 120000, atualizarEstados);
+      }
+    });
   }
+
+  // Modo app: carrega, em ordem, os módulos do app (em ../js/, relativo a www/site/) e o js/modo-app.js do site.
+  var MODULOS_APP = ["../js/integridade.js", "../js/monitorLogic.js", "../js/config.js", "../js/news.js", "../js/eventos.js", "../js/atualizacao.js", "js/modo-app.js"];
+  function carregarScripts(lista) {
+    return lista.reduce(function (p, src) {
+      return p.then(function () {
+        return new Promise(function (ok) {
+          var s = document.createElement("script");
+          s.src = src; s.async = false;
+          s.onload = function () { ok(true); };
+          s.onerror = function () { console.warn("modo app: não carregou " + src); ok(false); };   // segue sem ele
+          document.head.appendChild(s);
+        });
+      });
+    }, Promise.resolve());
+  }
+  function prepararModoApp() {
+    var limite = new Promise(function (ok) { setTimeout(ok, 8000); });      // nunca deixa a página esperando para sempre
+    return Promise.race([carregarScripts(MODULOS_APP), limite]).then(function () {
+      if (window.ModoApp) { try { window.ModoApp.iniciar(Site); } catch (e) { console.error("modo app", e); } }
+    });
+  }
+
+  // =====================================================================
+  // API para o modo app (js/modo-app.js)
+  // =====================================================================
+  var Site = window.Site = {
+    C: C, PT: PT, S: S, APP: APP, DEMO: DEMO, esc: esc, $: $, setTxt: setTxt, setHtml: setHtml, d2: d2,
+    agoraMs: agoraMs, abrirExterno: abrirExterno, urlRede: urlRede, hooks: [], renderizar: function () { renderTudo(); },
+    aoRenderizar: function (fn) { Site.hooks.push(fn); },
+    criarAba: criarAba, irParaAba: irParaAba, abaAtual: function () { return abaAtual; },
+    // o modo app entrega as manchetes de todos os feeds (via proxy); a aba usa a mesma lista
+    noticias: {
+      definir: function (itens, estado, fonte) {
+        NOT.itens = itens || []; NOT.estado = estado || (NOT.itens.length ? "ok" : "vazio"); if (fonte) NOT.fonte = fonte;
+        renderNoticias();
+      },
+      extra: function () { return $("notExtra"); }
+    }
+  };
+  // No app, links externos abrem no navegador do aparelho (o WebView não abre janelas novas)
+  if (window.AndroidBridge && typeof window.AndroidBridge.openExternal === "function") {
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest("a[href]");
+      if (!a || !/^https?:/i.test(a.getAttribute("href"))) return;
+      e.preventDefault();
+      abrirExterno(a.href);
+    });
+  }
+
   // quando o relógio cruza 17h sem novos dados, troca "antes" por "aguardando"
   var modoAnterior = null;
   function renderHeroModoSeMudou() {
