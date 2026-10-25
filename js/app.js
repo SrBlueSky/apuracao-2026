@@ -37,7 +37,7 @@
   var S = {
     br: null, ufs: {}, gov: {}, vis: {},
     okBr: 0, falhasBr: 0, okEst: 0,
-    mapaModo: "2t", onde: "brasil", ordem: "nome", agrupar: false, regiao: "",
+    mapaModo: "1t", modoManual: false, onde: "brasil", ordem: "nome", agrupar: false, regiao: "",
     fixado: null, hover: null, ordemChave: "",
     linhas: {}, govEls: {}, demoInicio: (typeof performance !== "undefined" ? performance.now() : 0)
   };
@@ -330,6 +330,7 @@
       var b = e.target.closest("button[data-modo]");
       if (!b) return;
       S.mapaModo = b.dataset.modo;
+      S.modoManual = true;
       renderMapa();
       if (mundi) mundi.modoMudou();
     });
@@ -979,6 +980,14 @@
   function renderTudo() {
     S.vis = {};
     C.UFS.forEach(function (uf) { S.vis[uf] = C.visaoUF(S.ufs[uf] || null, uf, PT); });
+    // Sem votos do 2º turno o mapa "ao vivo" seria todo cinza: até a apuração começar, os mapas
+    // mostram o 1º turno; quando chegam votos, passam sozinhos para o ao vivo (salvo escolha manual).
+    if (!S.modoManual) {
+      var algumVoto = C.visaoNacional(S.br, PT).d.temVotos;
+      for (var uf in S.vis) if (S.vis[uf].d && S.vis[uf].d.temVotos) algumVoto = true;
+      var modoAuto = algumVoto ? "2t" : "1t";
+      if (S.mapaModo !== modoAuto) { S.mapaModo = modoAuto; if (mundi) mundi.modoMudou(); }
+    }
     try { renderHero(); } catch (e) { console.error("hero", e); }
     try { renderMapa(); } catch (e) { console.error("mapa", e); }
     try { if (mundi) mundi.render(); } catch (e) { console.error("mundi", e); }
