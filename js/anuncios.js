@@ -101,11 +101,33 @@
       "</div>" + btn + "</div>";
   }
 
-  // HTML de um espaço: anúncio válido, senão convite (só no site), senão nada.
+  // HTML de um espaço: o(s) anúncio(s) válido(s), senão convite (só no site), senão nada. O espaço
+  // aceita um anúncio (objeto) ou vários (lista); com mais de um, eles se revezam (ver girar()).
   function htmlEspaco(cfg, agoraMs, ehApp) {
-    var a = anuncioValido(cfg, agoraMs, ehApp);
-    if (a) return htmlAnuncio(a);
+    var lista = (Array.isArray(cfg) ? cfg : [cfg]).map(function (a) { return anuncioValido(a, agoraMs, ehApp); })
+      .filter(Boolean);
+    if (lista.length === 1) return htmlAnuncio(lista[0]);
+    if (lista.length > 1) {
+      return '<div class="anuncio-carrossel" data-n="' + lista.length + '">' +
+        lista.map(function (a, i) { return '<div class="anuncio-slide' + (i ? "" : " ativo") + '">' + htmlAnuncio(a) + "</div>"; }).join("") +
+        '<div class="anuncio-pontos" aria-hidden="true">' +
+        lista.map(function (a, i) { return "<i" + (i ? "" : ' class="ativo"') + "></i>"; }).join("") + "</div></div>";
+    }
     return ehApp ? "" : htmlConvite();
+  }
+
+  var GIRO_MS = 7000;
+  // Avança todos os espaços com mais de um anúncio (pausa enquanto o mouse está em cima).
+  function girar() {
+    Array.prototype.forEach.call(document.querySelectorAll(".anuncio-carrossel"), function (c) {
+      if (c.matches(":hover")) return;
+      var slides = c.querySelectorAll(".anuncio-slide"), pontos = c.querySelectorAll(".anuncio-pontos i");
+      var i = Array.prototype.findIndex.call(slides, function (s) { return s.classList.contains("ativo"); });
+      var prox = (i + 1) % slides.length;
+      slides[i].classList.remove("ativo"); slides[prox].classList.add("ativo");
+      if (pontos[i]) pontos[i].classList.remove("ativo");
+      if (pontos[prox]) pontos[prox].classList.add("ativo");
+    });
   }
 
   // ---------------------------------------------------------------- DOM (só no navegador)
@@ -166,6 +188,7 @@
     aplicar(null); // convite já na primeira pintura (no site); o arquivo chega logo depois
     carregar();
     setInterval(carregar, INTERVALO_MS);
+    setInterval(girar, GIRO_MS);
   }
 
   if (typeof window !== "undefined" && typeof document !== "undefined") {
