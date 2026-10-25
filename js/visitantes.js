@@ -1,12 +1,12 @@
 /* visitantes.js — "N agora · M hoje" no topo, a partir do contador da Cloudflare
  * (functions/apuracoes/api/visitas.js). Cada navegador guarda um código aleatório anônimo e
- * avisa o contador a cada minuto enquanto a página está visível. Sem resposta (ex. no endereço
+ * avisa o contador a cada 3 minutos enquanto a página está visível. Sem resposta (ex. no endereço
  * reserva do GitHub, que não tem o contador), o selo simplesmente não aparece. */
 (function (window, document) {
   "use strict";
 
   var URL_APP = "https://pedrohipolito.com.br/apuracoes/api/visitas";
-  var INTERVALO_MS = 60 * 1000;
+  var INTERVALO_MS = 3 * 60 * 1000;
 
   function ehApp() { return !!window.AndroidBridge || /[?&]app=1\b/.test(window.location.search); }
 
