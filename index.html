@@ -6,8 +6,7 @@
 <title>Apuração 2º Turno 2026</title>
 <meta name="description" content="Acompanhe ao vivo a apuração do 2º turno das eleições de 25 de outubro de 2026: Presidente, mapa por estado, evolução da apuração, governadores e notícias. Site independente, com dados do TSE.">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#f5f3ee" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f3ee">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
 <meta property="og:title" content="Apuração 2º Turno 2026">
@@ -19,7 +18,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&display=swap">
 <script>
 /* tema escolhido antes de pintar (evita "piscada") */
-(function(){try{var t=localStorage.getItem("tema");if(!t&&window.AndroidBridge&&localStorage.getItem("apuracao2026_tema")==='"escuro"')t="dark";if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}})();
+document.documentElement.setAttribute("data-theme","light"); /* sempre abre no modo claro; o botão troca só durante a visita */
 </script>
 <link rel="stylesheet" href="css/estilo.css">
 <link rel="stylesheet" href="css/anuncios.css">

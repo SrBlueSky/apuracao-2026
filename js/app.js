@@ -1067,10 +1067,8 @@
   function iniciarTema() {
     $("btnTema").addEventListener("click", function () {
       var raiz = document.documentElement, atual = raiz.getAttribute("data-theme");
-      if (!atual) atual = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       var prox = atual === "dark" ? "light" : "dark";
       raiz.setAttribute("data-theme", prox);
-      try { localStorage.setItem("tema", prox); } catch (e) {}
     });
   }
 

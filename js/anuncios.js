@@ -4,7 +4,7 @@
  * arquivo ao abrir e de novo a cada 10 minutos, sem precisar de versão nova do app.
  *
  * Três espaços, sempre longe dos números da apuração (clique sem querer é proibido pelas regras de
- * redes como o AdSense): entre o frente a frente e os números gerais (aba Presidente), na coluna do
+ * redes como o AdSense): no topo da aba Presidente, acima do título, na coluna do
  * mapa (abaixo do ranking) e uma faixa acima do rodapé. Espaço sem anúncio ativo mostra "Anuncie
  * aqui" no site; no app, só aparece anúncio com "mostrarNoApp": true (o convite nunca aparece lá).
  *
@@ -32,7 +32,7 @@
 
   // onde: seletor do elemento de referência; como: "antes" dele ou "dentro" (no fim).
   var ESPACOS = {
-    presidente: { onde: '#painel-presidente section[aria-labelledby="tituloNum"]', como: "antes", formato: "faixa" },
+    presidente: { onde: "#painel-presidente .hero", como: "antes", formato: "faixa" },
     mapa: { onde: "#painel-mapa .mapa-lateral", como: "dentro", formato: "bloco" },
     rodape: { onde: "footer.rodape", como: "antes", formato: "faixa" }
   };

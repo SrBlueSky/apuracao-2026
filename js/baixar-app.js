@@ -59,7 +59,7 @@
   }
 
   function iniciar() {
-    if (ehApp() || tipo() === "ios") return;
+    if (ehApp() || tipo() !== "android") return; // computador e iPhone não mostram
     var topo = document.querySelector(".topo-dir"), tema = document.getElementById("btnTema");
     if (topo && !document.getElementById("btnBaixar")) {
       var b = botao("", "Baixar o app");
