@@ -973,19 +973,24 @@
     return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" class="' + cls + '"' + (anc ? ' text-anchor="' + anc + '"' : "") + ">" + esc(txt) + "</text>";
   }
 
-  // desenha um gráfico de linhas dentro de `el`. cfg: {ys:[{cls, f(p)}], faixa:{min,max}, fmtY(v), ticksY:[...], zero:valor, altura}
+  // desenha um gráfico de linhas dentro de `el`. cfg: {ys:[{cls, f(p)}], faixa:{min,max}, fmtY(v), ticksY:[...], zero:valor, altura, xMax}
   function grafico(el, serie, cfg) {
     var W = el.clientWidth;
     if (!W) return null;                                  // painel escondido: recalcula quando abrir
-    var H = cfg.altura, m = { l: 62, r: 16, t: 12, b: 36 };
-    var fx = Evo.escala(0, 100, m.l, W - m.r), fy = Evo.escala(cfg.faixa.min, cfg.faixa.max, H - m.b, m.t);
+    var H = cfg.altura, xMax = cfg.xMax || 100;
+    // Margem esquerda do tamanho do rótulo mais largo do eixo Y (no celular, 62 px fixos
+    // roubavam quase 20% da largura do gráfico).
+    var maiorRotulo = 0;
+    cfg.ticksY.forEach(function (v) { maiorRotulo = Math.max(maiorRotulo, String(cfg.fmtY(v)).length); });
+    var m = { l: Math.max(40, Math.min(62, Math.round(maiorRotulo * 6.2) + 12)), r: W < 520 ? 10 : 16, t: 12, b: 36 };
+    var fx = Evo.escala(0, xMax, m.l, W - m.r), fy = Evo.escala(cfg.faixa.min, cfg.faixa.max, H - m.b, m.t);
     var h = '<svg class="evo-svg" viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(cfg.rotulo) + '">';
     cfg.ticksY.forEach(function (v) {
       var y = fy(v);
       h += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '" class="g-grade' + (v === cfg.destaque ? " g-meio" : "") + '"/>';
       h += svgTxt(m.l - 8, y + 4, cfg.fmtY(v), "g-eixo", "end");
     });
-    Evo.ticks(0, 100, W < 520 ? 5 : 10).forEach(function (v) {
+    Evo.ticks(0, xMax, 5).forEach(function (v) {
       var x = fx(v);
       h += '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + m.t + '" y2="' + (H - m.b) + '" class="g-grade g-vert"/>';
       h += svgTxt(x, H - m.b + 18, v + "%", "g-eixo", "middle");
@@ -1015,15 +1020,15 @@
     if (W === EVO.largura && serie.length === EVO.tamanho) return;
     EVO.largura = W; EVO.tamanho = serie.length;
     var alt = Math.max(250, Math.min(440, Math.round(W * 0.5)));
-    var fy = Evo.faixaPct(serie);
+    var fy = Evo.faixaPct(serie), xMax = Evo.eixoX(serie);
     var g1 = grafico($("evoGraf"), serie, {
-      altura: alt, faixa: fy, ticksY: Evo.ticks(fy.min, fy.max, 5), destaque: 50, fmtY: function (v) { return v + "%"; },
+      altura: alt, faixa: fy, ticksY: Evo.ticks(fy.min, fy.max, 5), destaque: 50, xMax: xMax, fmtY: function (v) { return v + "%"; },
       rotulo: "Porcentagem de votos válidos de Lula e de Flávio Bolsonaro conforme as urnas são apuradas",
       ys: [{ cls: "s13", f: function (p) { return p.a; } }, { cls: "s22", f: function (p) { return p.b; } }]
     });
     var fd = Evo.faixaDif(serie);
     var g2 = grafico($("evoDif"), serie, {
-      altura: Math.round(alt * 0.62), faixa: fd, ticksY: Evo.ticks(fd.min, fd.max, 4), destaque: 0, fmtY: fmtCompacto,
+      altura: Math.round(alt * 0.62), faixa: fd, ticksY: Evo.ticks(fd.min, fd.max, 4), destaque: 0, xMax: xMax, fmtY: fmtCompacto,
       rotulo: "Diferença de votos entre Lula e Flávio Bolsonaro conforme as urnas são apuradas",
       ys: [{ cls: "sdif", f: function (p) { return p.dif; } }],
       corPonto: function (p) { return p.dif >= 0 ? "s13" : "s22"; }

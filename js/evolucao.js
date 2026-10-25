@@ -110,6 +110,24 @@
     return { min: lo, max: hi };
   }
 
+  // Limite do eixo X (urnas apuradas). Acompanha o avanço da apuração: no começo, um eixo fixo
+  // de 0 a 100% espremeria todas as totalizações na borda esquerda (no celular, num risco de
+  // poucos pixels). Só aceita um limite em que o último traço do eixo caia exatamente nele,
+  // para a ponta do gráfico nunca ficar sem rótulo.
+  function eixoX(serie) {
+    var max = 0;
+    (serie || []).forEach(function (p) { if (fin(p && p.x)) max = Math.max(max, p.x); });
+    if (!fin(max) || max < 0) max = 0;
+    var cands = [5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 100];
+    for (var i = 0; i < cands.length; i++) {
+      var c = cands[i];
+      if (c < max) continue;
+      var t = ticks(0, c, 5);
+      if (t.length >= 3 && t.length <= 7 && Math.abs(t[t.length - 1] - c) < 1e-9) return c;
+    }
+    return 100;
+  }
+
   // Faixa do eixo Y da diferença em votos (simétrica em torno do 0).
   function faixaDif(serie) {
     var m = 0;
@@ -140,6 +158,7 @@
   return {
     CHAVE: CHAVE, MAX_PONTOS: MAX_PONTOS,
     carimbo: carimbo, ponto: ponto, valido: valido, adicionar: adicionar, lerSerie: lerSerie,
-    serieDemo: serieDemo, ticks: ticks, faixaPct: faixaPct, faixaDif: faixaDif, caminho: caminho, escala: escala
+    serieDemo: serieDemo, ticks: ticks, faixaPct: faixaPct, faixaDif: faixaDif, eixoX: eixoX,
+    caminho: caminho, escala: escala
   };
 });
