@@ -226,7 +226,7 @@
       }
       h += '</section>';
       // ---- 1º turno (caixa de referência)
-      h += '<section class="caixa-ref"><p class="turno-cab">' + C.selo1() + (m === "1t" ? ' <span class="mut">cor do mapa agora</span>' : "") + '</p>';
+      h += ctx.ref1tAbre() + '<p class="turno-cab">' + C.selo1() + (m === "1t" ? ' <span class="mut">cor do mapa agora</span>' : "") + '</p>';
       if (ref.temVotos) {
         var o = Math.max(0, 100 - ref.p13 - ref.p22);
         h += '<div class="mini-barra"><span class="a" style="width:' + ref.p13.toFixed(2) + '%"></span><span class="o" style="width:' + o.toFixed(2) + '%"></span><span class="b" style="width:' + ref.p22.toFixed(2) + '%"></span></div>';
@@ -239,7 +239,7 @@
       } else {
         h += '<p class="cartao-vazio" style="margin-top:8px">Sem votos de brasileiros neste país no 1º turno.</p>';
       }
-      h += '</section>';
+      h += '</details>';
       if (ref.eleitorado > 0) h += '<p class="cartao-info"><span class="mut">Eleitorado: ' + C.fmtInt(ref.eleitorado) + '</span></p>';
       h += listaCidades(iso, x.usaRef);
       return h;
@@ -259,11 +259,11 @@
         : '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span class="mut">Nenhum país tem votos apurados ainda.</span></p>');
       if (tot && !tot.ref) h += '<p class="cartao-info"><span class="mut">Total do Exterior: <span class="c13">Lula ' + C.fmtPct(tot.p13) + '</span> · <span class="c22">Flávio ' + C.fmtPct(tot.p22) + '</span></span></p>';
       h += '</section>';
-      h += '<section class="caixa-ref"><p class="turno-cab">' + C.selo1() + '</p>' + (n1 > 0
+      h += ctx.ref1tAbre() + '<p class="turno-cab">' + C.selo1() + '</p>' + (n1 > 0
         ? '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span>Em <b>' + n1 + '</b> países houve votos.</span></p>'
         : '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span class="mut">Sem dados do 1º turno.</span></p>');
       if (tot && tot.ref) h += '<p class="cartao-info"><span class="mut">Total do Exterior: <span class="c13">Lula ' + C.fmtPct(tot.p13) + '</span> · <span class="c22">Flávio ' + C.fmtPct(tot.p22) + '</span></span></p>';
-      h += '</section>';
+      h += '</details>';
       return h;
     }
 

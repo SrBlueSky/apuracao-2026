@@ -2,14 +2,16 @@
   "_leia": "Anúncios do site e do app. Para um patrocinador aparecer: preencha o espaço, troque \"ativo\" para true e publique. Sem anúncio ativo, o site mostra \"Anuncie aqui\" e o app não mostra nada. Veja ANUNCIOS.md. O botão \"Apoie\" (Pix) fica em \"apoio\": troque \"ativo\" para true quando a chave Pix estiver cadastrada no banco.",
   "espacos": {
     "presidente": {
-      "ativo": false,
+      "ativo": true,
       "mostrarNoApp": false,
-      "anunciante": "",
-      "titulo": "",
-      "texto": "",
-      "botao": "Saiba mais",
-      "link": "",
+      "anunciante": "Radar Serviços",
+      "titulo": "A prefeitura compra todo dia. Por que não de você?",
+      "texto": "Licitações das prefeituras do Vale do Paraíba, resumidas no seu e-mail toda semana. Para MEI, ME e EPP, a partir de R$ 30/mês.",
+      "botao": "Conhecer o Radar",
+      "link": "https://radarservicos.com/?utm_source=apuracoes&utm_medium=banner&utm_campaign=eleicao2026",
       "imagem": "",
+      "banner": "img/anuncios/radar-servicos-larga.png",
+      "bannerCelular": "img/anuncios/radar-servicos-celular.png",
       "de": "",
       "ate": ""
     },

@@ -179,12 +179,12 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
         </div>
       </div>
 
-      <details class="caixa-ref ref-hero" id="refHero" open>
+      <details class="caixa-ref ref-hero" id="refHero">
         <summary>
-          <span class="ref-tit"><span class="selo-t selo-1t">1º turno · 04/10</span> <b id="refTit">Como foi no 1º turno (04/10)</b></span>
-          <span class="ref-resumo" id="refResumo"></span>
+          <span class="ref-tit"><b id="refTit">Ver 1º turno (04/10)</b></span>
           <span class="ref-seta" aria-hidden="true"></span>
         </summary>
+        <p class="ref-cab"><span class="selo-t selo-1t">1º turno · 04/10</span> <span>Resultado final, só como referência.</span></p>
         <div class="ref-corpo">
           <div class="ref-cand c13"><span class="ref-nome">Lula</span><b id="ref13">—</b><small id="refv13"></small></div>
           <div class="ref-cand c22"><span class="ref-nome">Flávio Bolsonaro</span><b id="ref22">—</b><small id="refv22"></small></div>
@@ -195,13 +195,14 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
     </div>
   </div>
 
-  <section class="secao" aria-labelledby="tituloNum">
+  <section class="secao" id="secNum" aria-labelledby="tituloNum">
     <div class="wrap">
       <header class="sec-cab">
         <div>
           <p class="sec-kicker"><span class="selo-t selo-2t g">2º turno</span> Brasil, presidente</p>
           <h2 id="tituloNum">Números gerais</h2>
-          <p class="sec-sub" id="numSub">Comparecimento e votos que não escolhem candidato. A linha “1º turno” de cada cartão é só referência.</p>
+          <p class="sec-sub" id="numSub">Comparecimento e votos que não escolhem candidato.</p>
+          <button type="button" class="btn-1t" id="btnNum1t" aria-expanded="false" hidden><span class="btn-1t-txt">Ver 1º turno (04/10)</span><span class="ref-seta" aria-hidden="true"></span></button>
         </div>
       </header>
       <div class="num-grade" id="numGrade"></div>
@@ -315,7 +316,7 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
       <div>
         <p class="sec-kicker"><span class="selo-t selo-2t g">2º turno</span> Presidente · votos válidos</p>
         <h2 id="tituloEvo">Evolução da apuração</h2>
-        <p class="sec-sub">Como a votação de cada candidato no 2º turno muda conforme as urnas vão sendo apuradas. Cada ponto é uma totalização nova do TSE. Este gráfico é só do 2º turno: o 1º turno não aparece aqui.</p>
+        <p class="sec-sub">Como a votação de cada candidato no 2º turno muda conforme as urnas vão sendo apuradas. Cada ponto é uma totalização nova do TSE. Este gráfico é só do 2º turno.</p>
       </div>
     </header>
     <div class="evo-grade">
@@ -351,7 +352,7 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
       <div>
         <p class="sec-kicker"><span class="selo-t selo-2t g">2º turno</span> Presidente · 27 estados e exterior</p>
         <h2 id="tituloEstados">Estado por estado</h2>
-        <p class="sec-sub">Cada estado tem duas partes: o <b>2º turno</b> (ao vivo, em destaque; mostra “—” até haver votos apurados) e, separado e em cinza, o <b>1º turno (04/10)</b>, só como referência.</p>
+        <p class="sec-sub">Resultado do <b>2º turno</b>, ao vivo, estado por estado. Mostra “—” até haver votos apurados.</p>
       </div>
     </header>
     <div class="controles">
@@ -364,6 +365,7 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
         <button type="button" data-ord="eleitorado" aria-pressed="false">Eleitorado</button>
       </div>
       <label class="check"><input type="checkbox" id="chkRegiao"> <span>Agrupar por região</span></label>
+      <button type="button" class="btn-1t" id="btnEst1t" aria-pressed="false">Mostrar colunas do 1º turno</button>
     </div>
     <div class="controles controles-reg">
       <div class="chips" role="group" aria-label="Filtrar por região" id="ctlRegiao">
@@ -376,7 +378,7 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
         <button type="button" data-reg="Exterior" aria-pressed="false">Exterior</button>
       </div>
     </div>
-    <p class="dica-ord" id="dicaOrd" hidden>Enquanto o 2º turno não tem votos, “Lula”, “Flávio” e “Maior vantagem” ordenam pelo 1º turno (04/10).</p>
+    <p class="dica-ord" id="dicaOrd" hidden></p>
     <p class="leg-ufs"><span class="selo-t selo-2t g">2º turno</span> em cima, ao vivo <span class="selo-t selo-1t">1º turno · 04/10</span> embaixo, só referência</p>
     <div class="uf-grupos" aria-hidden="true">
       <span class="g2"><span class="selo-t selo-2t g">2º turno</span></span><span class="g1"><span class="selo-t selo-1t">1º turno · 04/10</span></span>
@@ -395,7 +397,7 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
       <div>
         <p class="sec-kicker"><span class="selo-t selo-2t g">2º turno</span> nos estados</p>
         <h2 id="tituloGov">Governadores</h2>
-        <p class="sec-sub">Seis estados têm disputa de governador no 2º turno. As cores só distinguem os dois candidatos de cada estado. Em cada cartão, o 2º turno vem em destaque; o 1º turno (04/10) fica na caixinha de baixo, só como referência.</p>
+        <p class="sec-sub">Seis estados têm disputa de governador no 2º turno. As cores só distinguem os dois candidatos de cada estado.</p>
       </div>
     </header>
     <div class="gov-grade" id="govGrade"></div>
@@ -431,7 +433,7 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
   <div class="wrap">
     <p class="rodape-mini"><strong>Apuração ao vivo do 2º turno da eleição presidencial de 25/10/2026</strong>, com dados oficiais do TSE: resultado para presidente, votos por estado, mapa, exterior e os governadores de AM, RN, DF, ES, AC e TO.</p>
     <p><strong>Site independente, sem vínculo com o TSE ou qualquer campanha.</strong> Fonte: TSE (<a href="https://resultados.tse.jus.br" target="_blank" rel="noopener noreferrer">resultados.tse.jus.br</a>). Os dados oficiais são os do TSE.</p>
-    <p class="rodape-mini">Os dados são lidos direto do TSE pelo seu navegador, sem intermediários, e podem atrasar alguns minutos em relação ao site oficial. O selo “Eleito” só aparece quando o próprio TSE o marca. Percentuais são de votos válidos. O 1º turno (resultado final de 04/10/2026) aparece só como referência, sempre separado e marcado como “1º turno”. A aba Notícias lê o feed público da Agência Brasil; os demais veículos e o X abrem em outra página.</p>
+    <p class="rodape-mini">Os dados são lidos direto do TSE pelo seu navegador, sem intermediários, e podem atrasar alguns minutos em relação ao site oficial. O selo “Eleito” só aparece quando o próprio TSE o marca. Percentuais são de votos válidos. A aba Notícias lê o feed público da Agência Brasil; os demais veículos e o X abrem em outra página.</p>
   </div>
 </footer>
 

@@ -751,10 +751,7 @@ h1, h2, h3, p { margin: 0; }
 .ref-hero summary::-webkit-details-marker { display: none; }
 .ref-tit { display: inline-flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
 .ref-tit b { color: var(--ink); font-weight: 700; }
-.ref-resumo { margin-left: auto; font-size: 13px; font-weight: 600; }
-.ref-hero[open] .ref-resumo { display: none; }
 .ref-seta { margin-left: auto; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform .2s; flex: none; margin-right: 4px; }
-.ref-resumo + .ref-seta { margin-left: 0; }
 .ref-hero[open] .ref-seta { transform: rotate(-135deg); }
 .ref-corpo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "l f" "bar bar" "dif dif"; gap: 8px 16px; margin-top: 12px; }
 .ref-cand { display: flex; flex-direction: column; min-width: 0; }
@@ -823,3 +820,55 @@ h1, h2, h3, p { margin: 0; }
 .uf-lbl { display: none; }
 @media (max-width: 899.98px) { .uf-lbl { display: inline; font-weight: 600; color: var(--muted); margin-right: 4px; font-size: 13px; } }
 @media (min-width: 900px) { .leg-ufs { display: none; } }
+
+
+/* =====================================================================
+   1º TURNO RECOLHIDO atrás de botões "Ver 1º turno": nada do 1º turno à vista sem um clique
+   ===================================================================== */
+.btn-1t, .ref-1t > summary, .gov-ref > summary, .ref-hero > summary {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer; list-style: none;
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px;
+  padding: 7px 14px; min-height: 36px; font-size: 13.5px; font-weight: 700; font-family: inherit;
+}
+.btn-1t:hover, .ref-1t > summary:hover, .gov-ref > summary:hover, .ref-hero > summary:hover { border-color: var(--ink); color: var(--ink); }
+.ref-1t > summary::-webkit-details-marker, .gov-ref > summary::-webkit-details-marker, .ref-hero > summary::-webkit-details-marker { display: none; }
+.btn-1t[hidden] { display: none; }
+.btn-1t .ref-seta, .ref-1t > summary .ref-seta, .gov-ref > summary .ref-seta, .ref-hero > summary .ref-seta { margin: 0 2px 2px 0; width: 7px; height: 7px; }
+.btn-1t[aria-expanded="true"] .ref-seta { transform: rotate(-135deg); margin-bottom: -2px; }
+.ref-1t[open] > summary .ref-seta, .gov-ref[open] > summary .ref-seta { transform: rotate(-135deg); margin-bottom: -2px; }
+.ref-hero > summary .ref-tit { flex: none; }
+.ref-hero > summary .ref-tit b { color: inherit; }
+.ref-hero:not([open]), .ref-1t:not([open]), .gov-ref:not([open]) { background: none; border: 0; padding: 0; }
+.ref-hero { margin-top: 18px; }
+.ref-1t[open], .gov-ref[open] { padding: 10px 12px 12px; }
+.ref-1t[open] > summary, .gov-ref[open] > summary { margin-bottom: 8px; }
+.ref-1t, .gov-ref { margin-top: 14px; }
+.ref-cab { margin: 12px 0 0; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; }
+.sec-cab .btn-1t { margin-top: 10px; }
+.controles .btn-1t { margin-left: auto; }
+.faixa-turno .btn-1t { margin-left: auto; background: var(--surface); }
+.dest-grade[data-turno="sem"] { grid-template-columns: minmax(0, 1fr); max-width: 640px; }
+
+/* números gerais: 1º turno só depois do botão */
+#secNum:not(.ver1t) .num-ref, #secNum:not(.ver1t) .nota-ref { display: none; }
+
+/* aba Estados: colunas do 1º turno escondidas até o botão */
+#painel-estados:not(.ver1t) .uf-ref, #painel-estados:not(.ver1t) .uf-grupos, #painel-estados:not(.ver1t) .leg-ufs,
+#painel-estados:not(.ver1t) .uf-cab .c1 { display: none; }
+#painel-estados:not(.ver1t) .uf-grupos .g1 { display: none; }
+@media (max-width: 899.98px) {
+  #painel-estados:not(.ver1t) .ufs li.uf { grid-template-areas: "nome nome marg" "barra barra barra" "l13 l22 apur"; }
+}
+@media (min-width: 900px) {
+  #painel-estados:not(.ver1t) .uf-cab, #painel-estados:not(.ver1t) .ufs li.uf { grid-template-columns: minmax(120px, 1.3fr) minmax(100px, 2fr) 80px 80px 100px 70px; }
+  #painel-estados:not(.ver1t) .ufs li.uf { grid-template-areas: "nome barra l13 l22 marg apur"; }
+}
+@media (min-width: 1024px) {
+  #painel-estados:not(.ver1t) .uf-cab, #painel-estados:not(.ver1t) .ufs li.uf { grid-template-columns: minmax(130px, 1.2fr) minmax(110px, 1.5fr) 92px 92px 124px 84px; }
+}
+@media (min-width: 1280px) {
+  #painel-estados:not(.ver1t) .uf-cab, #painel-estados:not(.ver1t) .ufs li.uf { grid-template-columns: minmax(160px, 1.3fr) minmax(160px, 2fr) 104px 104px 130px 90px; }
+}
+@media (min-width: 1440px) {
+  #painel-estados:not(.ver1t) .uf-cab, #painel-estados:not(.ver1t) .ufs li.uf { grid-template-columns: minmax(180px, 1.2fr) minmax(180px, 2fr) 118px 118px 150px 100px; }
+}

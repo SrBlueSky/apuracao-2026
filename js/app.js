@@ -37,7 +37,7 @@
   var S = {
     br: null, ufs: {}, gov: {}, vis: {},
     okBr: 0, falhasBr: 0, okEst: 0,
-    mapaModo: "1t", modoManual: false, algumVoto: false, onde: "brasil", ordem: "nome", agrupar: false, regiao: "",
+    mapaModo: "2t", modoManual: false, abre1t: {}, algumVoto: false, onde: "brasil", ordem: "nome", agrupar: false, regiao: "",
     fixado: null, hover: null, ordemChave: "",
     linhas: {}, govEls: {}, demoInicio: (typeof performance !== "undefined" ? performance.now() : 0)
   };
@@ -142,17 +142,13 @@
     setTxt($("heroAtual"), d.atualizacao.longo);
   }
 
-  // Caixa "Como foi no 1º turno (04/10)": aberta antes de haver votos; recolhida ("Comparar com o 1º turno") quando o 2º turno está ao vivo.
+  // Caixa do 1º turno: SEMPRE recolhida atrás do botão "Ver 1º turno (04/10)" (a pessoa abre se quiser; vale só para a visita).
   function renderRefHero(ref, vivo) {
     var box = $("refHero"); if (!box) return;
     box.hidden = !ref;
     if (!ref) return;
-    var ant = box._vivo;
-    if (ant !== vivo) { box._vivo = vivo; box.open = !vivo; }       // só na troca de modo: não fecha o que a pessoa abriu
-    setTxt($("refTit"), vivo ? "Comparar com o 1º turno (04/10)" : "Como foi no 1º turno (04/10)");
     setTxt($("ref13"), C.fmtPct(ref["13"].pct)); setTxt($("ref22"), C.fmtPct(ref["22"].pct));
     setTxt($("refv13"), C.fmtInt(ref["13"].vap) + " votos"); setTxt($("refv22"), C.fmtInt(ref["22"].vap) + " votos");
-    setTxt($("refResumo"), "Lula " + C.fmtPct(ref["13"].pct) + " · Flávio " + C.fmtPct(ref["22"].pct));
     var w13 = ref["13"].pct, w22 = ref["22"].pct;
     setW($("rseg13"), w13); setW($("rseg22"), w22); setW($("rsegOutros"), Math.max(0, 100 - w13 - w22));
     $("refBarra").setAttribute("aria-label", "1º turno: Lula " + d2(w13) + " por cento, Flávio Bolsonaro " + d2(w22) + " por cento");
@@ -211,6 +207,7 @@
   }
 
   var TXT_MAPA_1T = "Resultado final do 1º turno (04/10), colorido pelo mais votado entre Lula e Flávio em cada estado. Os demais candidatos não entram na cor.";
+  var TXT_SEM_VOTOS = "O mapa do 2º turno começa a ser pintado às 17h, com os primeiros resultados.";
   var TXT_MAPA_2T = "Cada estado leva a cor de quem está à frente no 2º turno; quanto mais intensa, maior a vantagem. Cinza: ainda sem votos apurados.";
 
   // Faixa explícita acima do mapa (Brasil e exterior): diz qual turno está desenhado.
@@ -223,7 +220,8 @@
           : "O mapa do 2º turno aparece quando a apuração começar, às 17h.") + "</span>" };
     }
     if (!S.algumVoto) {
-      return { turno: "2t", html: C.selo2(false) + "<span><b>Mostrando o 2º turno.</b> Ainda sem votos apurados: o mapa fica cinza até a apuração começar" + (inicio ? "." : " (17h).") + "</span>" };
+      return { turno: "2t", html: C.selo2(false) + "<span>" + (inicio ? "O mapa do 2º turno começa a ser pintado com os primeiros resultados do TSE." : TXT_SEM_VOTOS) + "</span>" +
+        '<button type="button" class="btn-1t" data-ver-mapa1t>Ver mapa do 1º turno (04/10)</button>' };
     }
     return null;
   }
@@ -280,15 +278,20 @@
       if (x2.l) { if (x2.l === "13") a13++; else a22++; }
       if (x1.l) { n1++; if (x1.l === "13") b13++; else b22++; }
     });
-    var h = '<h3><small>Detalhes</small>Escolha um estado</h3><p class="cartao-vazio" style="margin-top:10px">Passe o mouse (ou toque) em um estado do mapa para ver a votação do 2º turno e, separado, como foi o 1º turno.</p>';
+    var h = '<h3><small>Detalhes</small>Escolha um estado</h3><p class="cartao-vazio" style="margin-top:10px">Passe o mouse (ou toque) em um estado do mapa para ver a votação do 2º turno.</p>';
     h += '<section class="turno-bloco"><p class="turno-cab">' + C.selo2(n2 > 0) + '</p>' + (n2 > 0
       ? '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span>Entre os 28 locais de votação (27 estados e exterior), <b>' + n2 + '</b> já têm votos apurados.</span>' +
         (S.mapaModo === "2t" ? '<span><span class="c13">Lula lidera em ' + a13 + '</span> · <span class="c22">Flávio lidera em ' + a22 + '</span></span>' : '') + '</p>'
       : '<p class="cartao-info mut" style="border:0;padding:0;margin-top:8px"><span class="mut">Nenhum estado tem votos apurados ainda.</span></p>') + '</section>';
-    h += '<section class="caixa-ref"><p class="turno-cab">' + C.selo1() + '</p>' + (n1 > 0
+    h += ref1tAbre() + '<p class="turno-cab">' + C.selo1() + '</p>' + (n1 > 0
       ? '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span>Resultado final em 27 estados e exterior.</span></p>'
-      : '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span class="mut">Sem dados do 1º turno.</span></p>') + '</section>';
+      : '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span class="mut">Sem dados do 1º turno.</span></p>') + '</details>';
     return h;
+  }
+
+  // 1º turno dentro do cartão do mapa: <details> fechado atrás de "Ver 1º turno (04/10)". O estado (aberto/fechado) vale só para a visita.
+  function ref1tAbre() {
+    return '<details class="caixa-ref ref-1t" data-k1t="cartao"' + (S.abre1t.cartao ? " open" : "") + '><summary><span>Ver 1º turno (04/10)</span><span class="ref-seta" aria-hidden="true"></span></summary>';
   }
 
   function linhaCartao(cls, nome, pct, votos) {
@@ -316,7 +319,7 @@
     }
     h += '</section>';
     // ---- 1º turno (caixa de referência)
-    h += '<section class="caixa-ref"><p class="turno-cab">' + C.selo1() + (S.mapaModo === "1t" ? ' <span class="mut">cor do mapa agora</span>' : "") + '</p>';
+    h += ref1tAbre() + '<p class="turno-cab">' + C.selo1() + (S.mapaModo === "1t" ? ' <span class="mut">cor do mapa agora</span>' : "") + '</p>';
     if (ref) {
       h += '<div class="mini-barra"><span class="a" style="width:' + ref["13"].pct.toFixed(2) + '%"></span><span class="o" style="width:' + ref.outros.toFixed(2) + '%"></span><span class="b" style="width:' + ref["22"].pct.toFixed(2) + '%"></span></div>';
       h += linhaCartao("c13", "Lula", ref["13"].pct, ref["13"].vap) + linhaCartao("c22", "Flávio Bolsonaro", ref["22"].pct, ref["22"].vap);
@@ -326,7 +329,7 @@
       if (live) h += '<span class="mut">Variação do 2º turno sobre o 1º: Lula ' + C.fmtSinal(v.var13) + ' p.p. · Flávio ' + C.fmtSinal(v.var22) + ' p.p.</span>';
       h += '</div>';
     } else h += '<p class="cartao-vazio" style="margin-top:8px">Sem dados do 1º turno.</p>';
-    h += '</section>';
+    h += '</details>';
     if (v.eleitorado > 0) h += '<p class="cartao-info"><span class="mut">Eleitorado: ' + C.fmtInt(v.eleitorado) + '</span></p>';
     return h;
   }
@@ -392,14 +395,42 @@
       if (S.fixado && !e.target.closest("#mapaBox, #brasilGrade .mapa-lateral, #chipZZ, #ctlMapa, .dest-grade")) { S.fixado = null; renderMapa(); }
     });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && S.fixado) { S.fixado = null; renderMapa(); } });
-    $("ctlMapa").addEventListener("click", function (e) {
-      var b = e.target.closest("button[data-modo]");
-      if (!b) return;
-      S.mapaModo = b.dataset.modo;
+    function trocarModoMapa(m) {
+      S.mapaModo = m;
       S.modoManual = true;
       renderMapa();
       if (mundi) mundi.modoMudou();
+    }
+    $("ctlMapa").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-modo]");
+      if (b) trocarModoMapa(b.dataset.modo);
     });
+    // botão da faixa cinza ("Ver mapa do 1º turno (04/10)") = clicar no alternador
+    $("faixaMapa").addEventListener("click", function (e) {
+      if (e.target.closest("[data-ver-mapa1t]")) { e.stopPropagation(); trocarModoMapa("1t"); }
+    });
+  }
+
+  // =====================================================================
+  // 1º TURNO RECOLHIDO: tudo do 1º turno fica atrás de botões "Ver 1º turno"; abrir vale só para a visita (nada é salvo).
+  // =====================================================================
+  function ligar1t() {
+    // <details> do cartão do mapa e dos governadores: lembra o estado, porque o cartão é refeito a cada passada do mouse
+    document.addEventListener("toggle", function (e) {
+      var t = e.target; if (t && t.dataset && t.dataset.k1t === "cartao") S.abre1t.cartao = t.open;
+    }, true);
+    function alternar(btnId, el, classe, rotOn, rotOff, usaAria) {
+      var b = $(btnId), alvo = $(el); if (!b || !alvo) return;
+      b.addEventListener("click", function () {
+        var on = !alvo.classList.contains(classe);
+        alvo.classList.toggle(classe, on);
+        b.setAttribute(usaAria, String(on));
+        var t = b.querySelector(".btn-1t-txt"); (t || b).firstChild.nodeValue = on ? rotOn : rotOff;
+        if (btnId === "btnEst1t") { S.ver1tEst = on; renderLista(); }
+      });
+    }
+    alternar("btnNum1t", "secNum", "ver1t", "Esconder 1º turno", "Ver 1º turno (04/10)", "aria-expanded");
+    alternar("btnEst1t", "painel-estados", "ver1t", "Esconder colunas do 1º turno", "Mostrar colunas do 1º turno", "aria-pressed");
   }
 
   // =====================================================================
@@ -410,7 +441,7 @@
     if (!window.Mundi || !window.Exterior || !window.ExteriorPaises) return;
     mundi = window.Mundi.criar({
       C: C, X: window.Exterior, P: window.ExteriorPaises, D: D, DEMO: DEMO, esc: esc, $: $, setHtml: setHtml, setTxt: setTxt,
-      buscarUrl: buscarUrl, ele2: C.ELE.pres2, modo: function () { return S.mapaModo; },
+      buscarUrl: buscarUrl, ele2: C.ELE.pres2, modo: function () { return S.mapaModo; }, ref1tAbre: ref1tAbre,
       demoT: function () { return S.demoT !== undefined && S.demoT !== null ? S.demoT : 0; },
       reduz: function () { return REDUZ; },
       irParaBrasil: function () { irParaMapaOnde("brasil"); },
@@ -497,7 +528,10 @@
       setW(L.trilho, d.pst);
     });
     var dica = $("dicaOrd");
-    if (dica) dica.hidden = S.algumVoto || !(S.ordem === "lula" || S.ordem === "flavio" || S.ordem === "margem");
+    if (dica) {
+      dica.hidden = S.algumVoto || !(S.ordem === "lula" || S.ordem === "flavio" || S.ordem === "margem");
+      setTxt(dica, S.ver1tEst ? "Enquanto o 2º turno não tem votos, “Lula”, “Flávio” e “Maior vantagem” ordenam pelo 1º turno (04/10)." : "Ainda não há votos do 2º turno: esta ordem é provisória.");
+    }
 
     if (S.regiao) vis = vis.filter(function (v) { return v.info.regiao === S.regiao; });
     var ord = C.ordenarUFs(vis, S.ordem);
@@ -555,9 +589,9 @@
         '<div class="gov-barra vazia"><span class="a"></span><span class="o"></span><span class="b"></span></div>' +
         '<div class="gov-prog"><div class="trilho"><span class="trilho-fill" data-r="trilho"></span></div><span data-r="prog">0,00% das urnas</span></div>' +
         '<div class="gov-rod" data-r="rod"></div>' +
-        '<div class="caixa-ref gov-ref" data-r="ref"></div>';
+        '<details class="caixa-ref gov-ref" data-r="ref" data-k1t="gov"><summary><span>Ver 1º turno (04/10)</span><span class="ref-seta" aria-hidden="true"></span></summary><div data-r="refc"></div></details>';
       var q = function (s) { return art.querySelector(s); };
-      var els = { art: art, barra: q(".gov-barra"), a: q(".gov-barra .a"), o: q(".gov-barra .o"), b: q(".gov-barra .b"), trilho: q('[data-r="trilho"]'), prog: q('[data-r="prog"]'), rod: q('[data-r="rod"]'), ref: q('[data-r="ref"]'), selo: q('.gov-topo [data-r="selo"]') };
+      var els = { art: art, barra: q(".gov-barra"), a: q(".gov-barra .a"), o: q(".gov-barra .o"), b: q(".gov-barra .b"), trilho: q('[data-r="trilho"]'), prog: q('[data-r="prog"]'), rod: q('[data-r="rod"]'), ref: q('[data-r="ref"]'), refc: q('[data-r="refc"]'), selo: q('.gov-topo [data-r="selo"]') };
       ["ca", "cb"].forEach(function (k) {
         var r = q('[data-r="' + k + '"]');
         els[k] = { row: r, foto: r.querySelector(".gov-foto"), nome: r.querySelector('[data-r="nome"]'), selo: r.querySelector('[data-r="selo"]'),
@@ -613,7 +647,7 @@
           }).join("") + "</p>";
       }
       G.ref.hidden = !ref;
-      setHtml(G.ref, rh);
+      setHtml(G.refc, rh);
     });
   }
 
@@ -654,6 +688,7 @@
       ref ? refLin(ref.pc, n.dPc) : "");
     card("pa", n.pa, tem ? C.fmtInt(n.abstencao) + " eleitores não compareceram" : "Aguardando a apuração",
       ref ? refLin(ref.pa, n.dPa) : "");
+    var bn = $("btnNum1t"); if (bn) bn.hidden = !ref;
     card("pb", n.pvb, tem ? C.fmtInt(n.brancos) + " votos" : "Aguardando a apuração", "");
     card("pn", n.ptvn, tem ? C.fmtInt(n.nulos) + " votos" : "Aguardando a apuração", "");
     var nota = $("numNota");
@@ -663,7 +698,7 @@
         '<span class="nota-lin nota-ref">' + C.selo1() + " Brancos e nulos juntos: <b>" + C.fmtPct(ref.pbn) + "</b>" + (tem ? " (2º turno " + C.fmtSinal(n.dPbn) + " p.p.)" : "") +
         ' <small>Calculado como comparecimento menos votos válidos; o arquivo do 1º turno aqui guardado não separa brancos de nulos.</small></span>');
     } else nota.hidden = true;
-    setTxt($("numSub"), tem ? "Totais nacionais do 2º turno, com a apuração em curso. A linha “1º turno” de cada cartão é só referência." : "Aparecem quando o TSE publicar os primeiros votos do 2º turno. O 1º turno aparece abaixo de cada número, só como referência.");
+    setTxt($("numSub"), tem ? "Totais nacionais do 2º turno, com a apuração em curso." : "Aparecem quando o TSE publicar os primeiros votos do 2º turno.");
   }
 
   // =====================================================================
@@ -780,9 +815,10 @@
   // =====================================================================
   // DESTAQUES (aba Presidente): mini-mapa e maiores vantagens
   // =====================================================================
+  // sempre o 2º turno; sem votos, a seção mostra só o mini-mapa cinza com uma frase (modo "sem")
   function modoDestaque() {
     for (var i = 0; i < C.UFS.length; i++) { var v = S.vis[C.UFS[i]]; if (v && v.d.temVotos) return "2t"; }
-    return "1t";
+    return "sem";
   }
   function margemUF(v, modo) { return modo === "1t" ? v.refMargemPP : v.d.margemPP; }
 
@@ -822,32 +858,33 @@
       '<span class="rk-bar"><i style="width:' + w.toFixed(1) + '%"></i></span><b>+' + d2(pp) + ' p.p.</b></button></li>';
   }
   function renderDestaques() {
-    var modo = modoDestaque();
+    var modo = modoDestaque(), modoLid = "2t";
     var por = { "13": [], "22": [] };
     C.UFS.forEach(function (uf) {
       if (uf === "zz") return;
       var v = S.vis[uf]; if (!v) return;
-      var x = lideranca(v, modo);
-      if (x.l) por[x.l].push({ uf: uf, v: v, pp: margemUF(v, modo) });
+      var x = lideranca(v, modoLid);
+      if (x.l) por[x.l].push({ uf: uf, v: v, pp: margemUF(v, modoLid) });
     });
     ["13", "22"].forEach(function (k) {
       var arr = por[k].sort(function (a, b) { return b.pp - a.pp || a.v.info.nome.localeCompare(b.v.info.nome, "pt-BR"); }).slice(0, 6);
       var max = arr.length ? arr[0].pp : 0;
-      setHtml($("rank" + k), arr.length ? arr.map(function (r) { return linhaRank(r.uf, r.v, modo, max); }).join("") :
-        '<li class="rank-vazio">' + (modo === "2t" ? "Nenhum estado com " + esc(nomePres(k)) + " à frente até aqui." : "Sem dados.") + "</li>");
+      setHtml($("rank" + k), arr.length ? arr.map(function (r) { return linhaRank(r.uf, r.v, modoLid, max); }).join("") :
+        '<li class="rank-vazio">' + "Nenhum estado com " + esc(nomePres(k)) + " à frente até aqui." + "</li>");
     });
     setTxt($("destSub"), modo === "2t"
       ? "Os estados onde cada candidato tem a maior vantagem agora no 2º turno, entre os que já têm votos apurados. Toque em um estado para ver os detalhes no mapa."
-      : "Ainda não há votos do 2º turno. Enquanto isso, o mapa mostra o resultado do 1º turno, só como referência.");
+      : "Onde cada candidato tem a maior vantagem no 2º turno, a partir dos primeiros votos apurados.");
     var fx = $("destFaixa");
     fx.hidden = modo === "2t";
-    setHtml(fx, modo === "2t" ? "" : C.selo1() + "<span><b>Mostrando o 1º turno (04/10).</b> As vantagens do 2º turno aparecem aqui quando a apuração começar.</span>");
-    $("destGrade").dataset.turno = modo;
-    document.querySelectorAll("#destGrade .dest-lista").forEach(function (e) { e.hidden = modo === "1t"; });   // 1º turno: sem listas de quem liderou
+    fx.dataset.turno = "2t";
+    setHtml(fx, modo === "2t" ? "" : C.selo2(false) + "<span>" + (agoraMs() >= C.INICIO_DIVULGACAO_MS ? "O mapa do 2º turno começa a ser pintado com os primeiros resultados do TSE." : TXT_SEM_VOTOS) + "</span>");
+    $("destGrade").dataset.turno = modo === "2t" ? "2t" : "sem";   // "sem": mini-mapa sozinho, numa coluna
+    document.querySelectorAll("#destGrade .dest-lista").forEach(function (e) { e.hidden = modo !== "2t"; });
     ["13", "22"].forEach(function (k) {
-      setHtml($("tit" + k), (k === "13" ? "Lula" : "Flávio") + " · maiores vantagens " + (modo === "1t" ? C.selo1() : C.selo2(true)));
+      setHtml($("tit" + k), (k === "13" ? "Lula" : "Flávio") + " · maiores vantagens " + C.selo2(true));
     });
-    $("miniMapa").querySelectorAll("path[data-uf]").forEach(function (p) { if (S.vis[p.dataset.uf]) pintar(p, S.vis[p.dataset.uf], modo); });
+    $("miniMapa").querySelectorAll("path[data-uf]").forEach(function (p) { if (S.vis[p.dataset.uf]) pintar(p, S.vis[p.dataset.uf], modoLid); });
   }
 
   // Ranking dos estados (aba Mapa, só no desktop): líder e vantagem de cada UF, no turno escolhido no mapa
@@ -1069,15 +1106,10 @@
   function renderTudo() {
     S.vis = {};
     C.UFS.forEach(function (uf) { S.vis[uf] = C.visaoUF(S.ufs[uf] || null, uf, PT); });
-    // Sem votos do 2º turno o mapa "ao vivo" seria todo cinza: até a apuração começar, os mapas
-    // mostram o 1º turno; quando chegam votos, passam sozinhos para o ao vivo (salvo escolha manual).
+    // O mapa abre SEMPRE no 2º turno (cinza, com uma faixa, enquanto não há votos); o 1º turno só pelo alternador/botão.
     var algumVoto = C.visaoNacional(S.br, PT).d.temVotos;
     for (var uf in S.vis) if (S.vis[uf].d && S.vis[uf].d.temVotos) algumVoto = true;
     S.algumVoto = algumVoto;
-    if (!S.modoManual) {
-      var modoAuto = algumVoto ? "2t" : "1t";
-      if (S.mapaModo !== modoAuto) { S.mapaModo = modoAuto; if (mundi) mundi.modoMudou(); }
-    }
     try { renderHero(); } catch (e) { console.error("hero", e); }
     try { renderMapa(); } catch (e) { console.error("mapa", e); }
     try { if (mundi) mundi.render(); } catch (e) { console.error("mundi", e); }
@@ -1181,7 +1213,7 @@
       $("foto" + k).innerHTML = htmlFoto(C.urlFoto(C.ELE.pres2, "br", p.sqcand), C.iniciais(p.nome), "Foto de " + p.nome);
     });
     criarMundi();
-    montarMapa(); construirMiniMapa(); construirLegenda(); construirLista(); construirGov(); construirNumeros(); iniciarTema();
+    montarMapa(); construirMiniMapa(); construirLegenda(); construirLista(); construirGov(); construirNumeros(); ligar1t(); iniciarTema();
     construirLinksNoticias(); renderNoticias();
     aoMostrar.evolucao = function () { EVO.tamanho = -1; evoAtualizar(); renderEvolucao(); };
     aoMostrar.noticias = iniciarNoticiasPublico;
