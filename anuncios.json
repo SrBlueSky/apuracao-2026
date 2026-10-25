@@ -73,7 +73,7 @@
     "texto": "O site é independente e gratuito. Se ele te ajudou a acompanhar a apuração, você pode apoiar com qualquer valor pelo Pix."
   },
   "aviso": {
-    "ativo": true,
+    "ativo": false,
     "titulo": "Divulgação pausada pelo TSE.",
     "texto": "O STF prorrogou a votação até as 19h e o TSE suspendeu a publicação dos resultados depois da primeira parcial (17h06, 0,25% das urnas). Os números voltam a ser atualizados aqui assim que o TSE retomar a divulgação."
   }
