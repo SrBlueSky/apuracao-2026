@@ -115,6 +115,19 @@
 
     renderRefHero(ref, vivo);
 
+    // frase de liderança: SÓ com votos do 2º turno (nunca do 1º)
+    var dif = $("heroDif");
+    if (dif) {
+      var txtDif = "";
+      if (vivo) {
+        if (d.empate || !d.lider) txtDif = "Empate em votos válidos";
+        else txtDif = '<b class="c' + d.lider + '">' + esc(C.PRES[d.lider].curto) + '</b> à frente por <b>' + C.fmtInt(d.margemVotos) +
+          ' votos</b> (' + d2(d.margemPP) + ' ponto' + (d.margemPP >= 1.005 || d.margemPP < 0.995 ? "s" : "") + ' percentuais)';
+      }
+      dif.hidden = !txtDif;
+      setHtml(dif, txtDif);
+    }
+
     var ele = d.eleito;
     $("heroEleito").hidden = !ele;
     if (ele) setTxt($("heroEleito"), "O TSE registra " + nomePres(ele) + " como eleito.");
@@ -225,7 +238,7 @@
     f.hidden = !x;
     if (x) { f.dataset.turno = x.turno; setHtml(f, x.html); }
     ["brasilGrade", "mundiGrade"].forEach(function (id) { var g = $(id); if (g) g.dataset.turno = S.mapaModo; });
-    setHtml($("rankUfNota"), S.mapaModo === "1t" ? C.selo1() + " por vantagem" : (S.algumVoto ? "por vantagem" : "sem votos ainda"));
+    setHtml($("rankUfNota"), S.mapaModo === "1t" ? C.selo1() + " Lula × Flávio, em %" : (S.algumVoto ? "por vantagem" : "sem votos ainda"));
     var lt = $("legTurno");
     if (lt) setHtml(lt, S.mapaModo === "1t" ? C.selo1() + " cores do 1º turno" : C.selo2(S.algumVoto) + " cores do 2º turno");
   }
@@ -270,10 +283,10 @@
     var h = '<h3><small>Detalhes</small>Escolha um estado</h3><p class="cartao-vazio" style="margin-top:10px">Passe o mouse (ou toque) em um estado do mapa para ver a votação do 2º turno e, separado, como foi o 1º turno.</p>';
     h += '<section class="turno-bloco"><p class="turno-cab">' + C.selo2(n2 > 0) + '</p>' + (n2 > 0
       ? '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span>Entre os 28 locais de votação (27 estados e exterior), <b>' + n2 + '</b> já têm votos apurados.</span>' +
-        '<span><span class="c13">Lula lidera em ' + a13 + '</span> · <span class="c22">Flávio lidera em ' + a22 + '</span></span></p>'
+        (S.mapaModo === "2t" ? '<span><span class="c13">Lula lidera em ' + a13 + '</span> · <span class="c22">Flávio lidera em ' + a22 + '</span></span>' : '') + '</p>'
       : '<p class="cartao-info mut" style="border:0;padding:0;margin-top:8px"><span class="mut">Nenhum estado tem votos apurados ainda.</span></p>') + '</section>';
     h += '<section class="caixa-ref"><p class="turno-cab">' + C.selo1() + '</p>' + (n1 > 0
-      ? '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span><span class="c13">Lula liderou em ' + b13 + '</span> · <span class="c22">Flávio liderou em ' + b22 + '</span> (27 estados e exterior)</span></p>'
+      ? '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span>Resultado final em 27 estados e exterior.</span></p>'
       : '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span class="mut">Sem dados do 1º turno.</span></p>') + '</section>';
     return h;
   }
@@ -309,10 +322,6 @@
       h += linhaCartao("c13", "Lula", ref["13"].pct, ref["13"].vap) + linhaCartao("c22", "Flávio Bolsonaro", ref["22"].pct, ref["22"].vap);
       h += '<div class="cartao-info">';
       if (ref.outros > 0) h += '<span class="mut">Demais candidatos: ' + C.fmtPct(ref.outros) + ' dos votos válidos.</span>';
-      if (ref["13"].vap !== ref["22"].vap) {
-        var l = ref["13"].vap > ref["22"].vap ? "13" : "22";
-        h += '<span>Vantagem: <span class="c' + l + '">' + esc(nomePres(l)) + ' +' + d2(Math.abs(ref["13"].pct - ref["22"].pct)) + ' p.p.</span> (' + C.fmtInt(Math.abs(ref["13"].vap - ref["22"].vap)) + ' votos)</span>';
-      }
       if (ref.pc !== null) h += '<span class="mut">Comparecimento: ' + C.fmtPct(ref.pc) + '</span>';
       if (live) h += '<span class="mut">Variação do 2º turno sobre o 1º: Lula ' + C.fmtSinal(v.var13) + ' p.p. · Flávio ' + C.fmtSinal(v.var22) + ' p.p.</span>';
       h += '</div>';
@@ -829,11 +838,12 @@
     });
     setTxt($("destSub"), modo === "2t"
       ? "Os estados onde cada candidato tem a maior vantagem agora no 2º turno, entre os que já têm votos apurados. Toque em um estado para ver os detalhes no mapa."
-      : "Ainda não há votos do 2º turno. Enquanto isso, a lista e o mapa abaixo mostram o resultado do 1º turno, só como referência. Toque em um estado para ver os detalhes no mapa.");
+      : "Ainda não há votos do 2º turno. Enquanto isso, o mapa mostra o resultado do 1º turno, só como referência.");
     var fx = $("destFaixa");
     fx.hidden = modo === "2t";
     setHtml(fx, modo === "2t" ? "" : C.selo1() + "<span><b>Mostrando o 1º turno (04/10).</b> As vantagens do 2º turno aparecem aqui quando a apuração começar.</span>");
     $("destGrade").dataset.turno = modo;
+    document.querySelectorAll("#destGrade .dest-lista").forEach(function (e) { e.hidden = modo === "1t"; });   // 1º turno: sem listas de quem liderou
     ["13", "22"].forEach(function (k) {
       setHtml($("tit" + k), (k === "13" ? "Lula" : "Flávio") + " · maiores vantagens " + (modo === "1t" ? C.selo1() : C.selo2(true)));
     });
@@ -851,12 +861,13 @@
     });
     var algum = itens.some(function (i) { return !!i.l; });
     itens.sort(function (a, b) { return (b.pp - a.pp) || a.v.info.nome.localeCompare(b.v.info.nome, "pt-BR"); });
-    setTxt($("rankUfNota"), algum ? "por vantagem" : "sem votos ainda");
+    setHtml($("rankUfNota"), modo === "1t" ? C.selo1() + " Lula × Flávio, em %" : (algum ? "por vantagem" : "sem votos ainda"));
     setHtml(ol, itens.map(function (i) {
       var sel = S.fixado === i.uf;
       return '<li><button type="button" class="rank-lin' + (sel ? " sel" : "") + '" data-uf="' + i.uf + '"' + (sel ? ' aria-current="true"' : "") + '>' +
         '<span class="rk-pt' + (i.l ? " c" + i.l : "") + '"></span><span class="rk-nome">' + esc(i.v.info.nome) + '</span>' +
-        (i.l ? '<b class="c' + i.l + '">' + esc(C.PRES[i.l].curto) + " +" + d2(i.pp) + "</b>" : '<b class="mut">—</b>') + "</button></li>";
+        (!i.l ? '<b class="mut">—</b>' : modo === "1t" && i.v.ref ? '<b class="mut">' + C.fmtPct(i.v.ref["13"].pct) + " × " + C.fmtPct(i.v.ref["22"].pct) + "</b>"
+          : '<b class="c' + i.l + '">' + esc(C.PRES[i.l].curto) + " +" + d2(i.pp) + "</b>") + "</button></li>";
     }).join(""));
   }
 
@@ -902,8 +913,8 @@
     setTxt($("evoP22"), ult ? C.fmtPct(ult.b) : "—");
     setTxt($("evoV13"), ult ? C.fmtInt(ult.va) + " votos" : "");
     setTxt($("evoV22"), ult ? C.fmtInt(ult.vb) + " votos" : "");
-    setTxt($("evoDifTxt"), ult ? (ult.dif !== 0 ? C.fmtInt(Math.abs(ult.dif)) : "Empate") : "—");
-    setTxt($("evoDifDet"), ult ? "votos de diferença, com " + C.fmtPct(ult.x) + " das urnas apuradas" : "Aparece com a primeira totalização.");
+    setTxt($("evoDifTxt"), ult ? (ult.dif !== 0 ? C.PRES[ult.dif > 0 ? "13" : "22"].curto + " +" + C.fmtInt(Math.abs(ult.dif)) : "Empate") : "—");
+    setTxt($("evoDifDet"), ult ? "votos de vantagem, com " + C.fmtPct(ult.x) + " das urnas apuradas" : "Aparece com a primeira totalização.");
     setTxt($("evoN"), String(serie.length));
     setTxt($("evoNDet"), DEMO ? "Série de demonstração, refeita a cada atualização; não é guardada." : "Os pontos ficam guardados neste aparelho, só neste navegador.");
     if (!vazio) desenharEvolucao();

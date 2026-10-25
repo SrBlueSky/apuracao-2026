@@ -3,10 +3,13 @@
  * Para trocar um patrocinador basta editar e publicar o anuncios.json: o site e o app leem o
  * arquivo ao abrir e de novo a cada 10 minutos, sem precisar de versão nova do app.
  *
- * Três espaços, sempre longe dos números da apuração (clique sem querer é proibido pelas regras de
- * redes como o AdSense): no topo da aba Presidente, acima do título, na coluna do
- * mapa (abaixo do ranking) e uma faixa acima do rodapé. Espaço sem anúncio ativo mostra "Anuncie
- * aqui" no site; no app, só aparece anúncio com "mostrarNoApp": true (o convite nunca aparece lá).
+ * Cinco espaços, sempre longe dos números da apuração (clique sem querer é proibido pelas regras de
+ * redes como o AdSense): "presidente" (faixa no topo da aba Presidente, acima do título), "mapa"
+ * (coluna do mapa, abaixo do ranking) e três rodapés independentes, cada um no fim das suas abas:
+ * "rodape1" (Presidente e Evolução), "rodape2" (Mapa e Estados) e "rodape3" (Governadores e
+ * Notícias). O "rodape" de arquivos antigos vale como "rodape1". Espaço sem anúncio ativo mostra
+ * "Anuncie aqui" no site; no app, só aparece anúncio com "mostrarNoApp": true (o convite nunca
+ * aparece lá). O site sai do ar na segunda, 26/10/2026, às 5h (Brasília).
  *
  * Formato de cada espaço em anuncios.json (todos os campos de texto opcionais, menos titulo):
  *   { "ativo": true, "mostrarNoApp": false, "anunciante": "Padaria Exemplo",
@@ -30,12 +33,39 @@
     "https://srbluesky.github.io/apuracao-2026/anuncios.json"
   ];
 
-  // onde: seletor do elemento de referência; como: "antes" dele ou "dentro" (no fim).
+  // Quando o site sai do ar (texto curto do convite e da página Anuncie).
+  var PRAZO = "No ar até 26/10, 5h";
+
+  // onde: seletor do elemento de referência (ou lista deles: o espaço aparece em cada um, com id
+  // próprio); como: "antes" dele ou "dentro" (no fim); nome/local: o que o convite diz ao anunciante.
   var ESPACOS = {
-    presidente: { onde: "#painel-presidente .hero", como: "antes", formato: "faixa" },
-    mapa: { onde: "#painel-mapa .mapa-lateral", como: "dentro", formato: "bloco" },
-    rodape: { onde: "footer.rodape", como: "antes", formato: "faixa" }
+    presidente: { onde: ["#painel-presidente .hero"], como: "antes", formato: "faixa",
+      nome: "Faixa principal", local: "topo da aba Presidente" },
+    mapa: { onde: ["#painel-mapa .mapa-lateral"], como: "dentro", formato: "bloco",
+      nome: "Coluna do mapa", local: "ao lado do mapa; abaixo dele no celular" },
+    rodape1: { onde: ["#painel-presidente", "#painel-evolucao"], como: "dentro", formato: "faixa",
+      nome: "Rodapé 1", local: "abas Presidente e Evolução" },
+    rodape2: { onde: ["#painel-mapa", "#painel-estados"], como: "dentro", formato: "faixa",
+      nome: "Rodapé 2", local: "abas Mapa e Estados" },
+    rodape3: { onde: ["#painel-governadores", "#painel-noticias"], como: "dentro", formato: "faixa",
+      nome: "Rodapé 3", local: "abas Governadores e Notícias" }
   };
+
+  // Id do elemento de cada lugar: "anuncio-<espaço>" se há um só; com vários, leva o nome da aba
+  // (ex. anuncio-rodape1-presidente).
+  function idLugar(id, i) {
+    var onde = ESPACOS[id].onde;
+    if (onde.length === 1) return "anuncio-" + id;
+    var m = /#painel-([\w-]+)/.exec(onde[i]);
+    return "anuncio-" + id + "-" + (m ? m[1] : i + 1);
+  }
+
+  // Configuração de um espaço no anuncios.json; "rodape" (arquivo antigo) vale como "rodape1".
+  function configDe(espacos, id) {
+    espacos = espacos || {};
+    if (id === "rodape1" && espacos.rodape1 == null && espacos.rodape != null) return espacos.rodape;
+    return espacos[id];
+  }
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -78,12 +108,15 @@
     };
   }
 
-  function htmlConvite() {
+  function htmlConvite(id) {
+    var esp = id && ESPACOS[id];
+    var qual = esp ? '<small class="anuncio-espaco">' + esc(esp.nome + " · " + esp.local) + "</small>" : "";
     var mailto = "mailto:" + CONTATO + "?subject=" + encodeURIComponent(ASSUNTO);
     return '<div class="anuncio-convite">' +
-      '<div class="anuncio-txt"><strong>Anuncie aqui</strong>' +
+      '<div class="anuncio-txt">' + qual + "<strong>Anuncie aqui</strong>" +
       "<span>Seu negócio para quem acompanha a apuração ao vivo.</span>" +
-      '<p class="vis-contagem" hidden></p></div>' +
+      '<p class="vis-contagem" hidden></p>' +
+      '<small class="anuncio-prazo">' + PRAZO + "</small></div>" +
       '<a class="anuncio-btn" href="anuncie.html">Ver espaços e preços</a>' +
       '<a class="anuncio-mail" href="' + mailto + '">' + CONTATO + "</a>" +
       '<small class="anuncio-regra">Não aceitamos anúncios de candidatos, partidos ou campanhas.</small>' +
@@ -104,7 +137,7 @@
 
   // HTML de um espaço: o(s) anúncio(s) válido(s), senão convite (só no site), senão nada. O espaço
   // aceita um anúncio (objeto) ou vários (lista); com mais de um, eles se revezam (ver girar()).
-  function htmlEspaco(cfg, agoraMs, ehApp) {
+  function htmlEspaco(cfg, agoraMs, ehApp, id) {
     var lista = (Array.isArray(cfg) ? cfg : [cfg]).map(function (a) { return anuncioValido(a, agoraMs, ehApp); })
       .filter(Boolean);
     if (lista.length === 1) return htmlAnuncio(lista[0]);
@@ -114,7 +147,7 @@
         '<div class="anuncio-pontos" aria-hidden="true">' +
         lista.map(function (a, i) { return "<i" + (i ? "" : ' class="ativo"') + "></i>"; }).join("") + "</div></div>";
     }
-    return ehApp ? "" : htmlConvite();
+    return ehApp ? "" : htmlConvite(id);
   }
 
   var GIRO_MS = 7000;
@@ -140,23 +173,25 @@
   function aplicar(dados) {
     var app = ehApp(), agora = Date.now(), espacos = (dados && dados.espacos) || {};
     Object.keys(ESPACOS).forEach(function (id) {
-      var lugar = ESPACOS[id], miolo = htmlEspaco(espacos[id], agora, app);
-      var caixa = document.getElementById("anuncio-" + id);
-      if (!miolo) { if (caixa) caixa.remove(); return; }
-      if (!caixa) {
-        var ref = document.querySelector(lugar.onde);
-        if (!ref) return;
-        caixa = document.createElement(lugar.formato === "faixa" ? "section" : "div");
-        caixa.id = "anuncio-" + id;
-        caixa.className = "anuncio anuncio-" + lugar.formato;
-        caixa.setAttribute("aria-label", "Publicidade");
-        if (lugar.como === "antes") ref.parentNode.insertBefore(caixa, ref);
-        else ref.appendChild(caixa);
-      }
-      var html = (lugar.formato === "faixa" ? '<div class="wrap">' : "") +
-        '<div class="anuncio-caixa"><span class="anuncio-rotulo">Publicidade</span>' + miolo + "</div>" +
-        (lugar.formato === "faixa" ? "</div>" : "");
-      if (caixa._h !== html) { caixa._h = html; caixa.innerHTML = html; }
+      var lugar = ESPACOS[id], miolo = htmlEspaco(configDe(espacos, id), agora, app, id);
+      lugar.onde.forEach(function (sel, i) {
+        var eid = idLugar(id, i), caixa = document.getElementById(eid);
+        if (!miolo) { if (caixa) caixa.remove(); return; }
+        if (!caixa) {
+          var ref = document.querySelector(sel);
+          if (!ref) return;
+          caixa = document.createElement(lugar.formato === "faixa" ? "section" : "div");
+          caixa.id = eid;
+          caixa.className = "anuncio anuncio-" + lugar.formato + " anuncio-" + id;
+          caixa.setAttribute("aria-label", "Publicidade");
+          if (lugar.como === "antes") ref.parentNode.insertBefore(caixa, ref);
+          else ref.appendChild(caixa);
+        }
+        var html = (lugar.formato === "faixa" ? '<div class="wrap">' : "") +
+          '<div class="anuncio-caixa"><span class="anuncio-rotulo">Publicidade</span>' + miolo + "</div>" +
+          (lugar.formato === "faixa" ? "</div>" : "");
+        if (caixa._h !== html) { caixa._h = html; caixa.innerHTML = html; }
+      });
     });
     if (window.Visitantes) window.Visitantes.preencher();
   }
@@ -198,6 +233,6 @@
     else iniciar();
   }
 
-  return { CONTATO: CONTATO, ESPACOS: ESPACOS, URLS_APP: URLS_APP, anuncioValido: anuncioValido,
+  return { CONTATO: CONTATO, PRAZO: PRAZO, ESPACOS: ESPACOS, idLugar: idLugar, configDe: configDe, URLS_APP: URLS_APP, anuncioValido: anuncioValido,
     htmlEspaco: htmlEspaco, esc: esc, diaMs: diaMs };
 });

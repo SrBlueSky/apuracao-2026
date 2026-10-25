@@ -1,4 +1,4 @@
-/* baixar-app.js — botão "Baixar o app" (só no site, nunca dentro do app).
+/* baixar-app.js — botão "Baixar o app" no rodapé (só no site, nunca dentro do app).
  * Android: baixa o APK mais recente direto. Computador: abre um QR Code para baixar no celular.
  * iPhone/iPad: não aparece (APK não instala em iOS).
  */
@@ -60,12 +60,6 @@
 
   function iniciar() {
     if (ehApp() || tipo() !== "android") return; // computador e iPhone não mostram
-    var topo = document.querySelector(".topo-dir"), tema = document.getElementById("btnTema");
-    if (topo && !document.getElementById("btnBaixar")) {
-      var b = botao("", "Baixar o app");
-      b.id = "btnBaixar";
-      topo.insertBefore(b, tema);
-    }
     var rod = document.querySelector("footer.rodape .wrap");
     if (rod && !document.getElementById("rodBaixar")) {
       var p = document.createElement("p");

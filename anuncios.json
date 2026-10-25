@@ -25,7 +25,31 @@
       "de": "",
       "ate": ""
     },
-    "rodape": {
+    "rodape1": {
+      "ativo": false,
+      "mostrarNoApp": false,
+      "anunciante": "",
+      "titulo": "",
+      "texto": "",
+      "botao": "Saiba mais",
+      "link": "",
+      "imagem": "",
+      "de": "",
+      "ate": ""
+    },
+    "rodape2": {
+      "ativo": false,
+      "mostrarNoApp": false,
+      "anunciante": "",
+      "titulo": "",
+      "texto": "",
+      "botao": "Saiba mais",
+      "link": "",
+      "imagem": "",
+      "de": "",
+      "ate": ""
+    },
+    "rodape3": {
       "ativo": false,
       "mostrarNoApp": false,
       "anunciante": "",

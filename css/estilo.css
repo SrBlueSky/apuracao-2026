@@ -356,7 +356,6 @@ h1, h2, h3, p { margin: 0; }
 @media (max-width: 639.98px) {
   /* celular: foto menor dentro do cartão, nomes quebram */
   .cand-sub { font-size: 12px; }
-  .marca-txt { display: none; }
   .status span { max-width: 48vw; }
 }
 @media (min-width: 900px) {
@@ -526,7 +525,6 @@ h1, h2, h3, p { margin: 0; }
   .evo-lado { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .not-lado > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (min-width: 640px) and (max-width: 1179.98px) { .marca-txt { display: block; } }
 
 /* ---------- DESKTOP (>= 1024px): largura de verdade, grade de 12 colunas ---------- */
 @media (min-width: 1024px) {
@@ -541,7 +539,6 @@ h1, h2, h3, p { margin: 0; }
   .topo-dir { order: 3; }
   .abas-lista { margin: 0; padding: 0; gap: 4px; scroll-padding: 0; }
   .abas-lista [role="tab"] { min-height: 42px; padding: 0 11px; font-size: 15px; }
-  .marca-txt { display: none; }
   .status { font-size: 13.5px; padding: 6px 12px; }
   .status span { max-width: 112px; }
   .btn-tema { width: 40px; height: 40px; }
@@ -651,7 +648,7 @@ h1, h2, h3, p { margin: 0; }
 
   .aviso-versao-in { padding: 14px var(--gut); }
 }
-@media (min-width: 1500px) { .marca-txt { display: block; } .topo-in { column-gap: 20px; } }
+@media (min-width: 1500px) { .topo-in { column-gap: 20px; } }
 @media (min-width: 1280px) {
   .abas-lista [role="tab"] { padding: 0 15px; }
   .status span { max-width: 180px; }
@@ -681,6 +678,16 @@ h1, h2, h3, p { margin: 0; }
   .marca svg { width: 38px; height: 38px; }
   .btn-tema { width: 44px; height: 44px; }
   .btn-tema svg { width: 22px; height: 22px; }
+}
+/* celulares estreitos (360–414 px): logo + título + botões na mesma linha, sem quebrar */
+@media (max-width: 420px) {
+  .topo-in { column-gap: 8px; }
+  .marca { gap: 8px; }
+  .marca svg { width: 34px; height: 34px; }
+  .marca-txt { font-size: 14px; }
+  .topo-dir { gap: 6px; }
+  .status { padding: 5px 8px; gap: 5px; font-size: 12px; }
+  .status span { max-width: 28vw; }
 }
 /* selo do topo: só aparece quando diz algo útil (ao vivo, sem conexão, demonstração) */
 .status[data-estado="ok"], .status[data-estado="conectando"] { display: none; }
@@ -728,6 +735,7 @@ h1, h2, h3, p { margin: 0; }
 .faixa-turno[data-turno="1t"] b { color: var(--ink); }
 .faixa-turno[data-turno="2t"] { background: color-mix(in srgb, var(--t2) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--t2) 40%, var(--line)); }
 .mapa-grade[data-turno="1t"] .mapa-caixa, .dest-grade[data-turno="1t"] .cartao-g { border-style: dashed; border-width: 1.5px; border-color: var(--borda-ref); }
+.dest-grade[data-turno="1t"] { grid-template-columns: minmax(0, 1fr); max-width: 640px; }
 .leg-turno { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
 
 /* hero: o placar grande é sempre do 2º turno */
