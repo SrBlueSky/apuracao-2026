@@ -72,14 +72,27 @@
 .btn-baixar { color: var(--ink); text-decoration: none; }
 #anuncio-presidente { padding: 16px 0 0; }
 
-/* vários anúncios no mesmo espaço: um por vez, revezando (js/anuncios.js girar) */
+/* vários anúncios no mesmo espaço: um por vez, revezando (js/anuncios.js girar), com setas, pontinhos
+ * clicáveis e swipe no toque */
 .anuncio-slide { display: none; }
 .anuncio-slide.ativo { display: block; animation: anuncio-entra .45s ease; }
 @keyframes anuncio-entra { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .anuncio-slide.ativo { animation: none; } }
-.anuncio-pontos { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
-.anuncio-pontos i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
-.anuncio-pontos i.ativo { background: var(--muted); }
+.anuncio-carrossel { touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+.anuncio-carrossel a, .anuncio-carrossel img { -webkit-user-drag: none; }
+.anuncio-nav { display: flex; align-items: center; justify-content: center; gap: 2px; margin-top: 8px; }
+.anuncio-pontos { display: flex; justify-content: center; }
+.anuncio-ponto { position: relative; width: 32px; height: 44px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.anuncio-ponto::before { content: ""; position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px;
+  border-radius: 50%; background: var(--line); transition: background .2s, transform .2s; }
+.anuncio-ponto:hover::before { background: var(--faint); }
+.anuncio-ponto.ativo::before { background: var(--muted); transform: scale(1.25); }
+.anuncio-seta { display: grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0; border-radius: 50%;
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; }
+.anuncio-seta:hover { color: var(--ink); background: var(--surface-2); }
+.anuncio-seta:active { transform: scale(.94); }
+.anuncio-seta:focus-visible, .anuncio-ponto:focus-visible { outline: 2.5px solid var(--ink); outline-offset: 2px; }
+.anuncio-janela { min-width: 0; }
 
 /* contagem de visitantes dentro das caixas "Anuncie aqui" e na página Anuncie (js/visitantes.js) */
 .vis-contagem { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; font-size: 14px; color: var(--muted); }
@@ -120,18 +133,25 @@
   .anuncio-faixa .anuncio-caixa.anuncio-caixa-larga { max-width: 760px; }
 }
 
-/* computador, com movimento permitido: esteira contínua da direita para a esquerda (~40 px/s) */
+/* computador, com movimento permitido: esteira contínua da direita para a esquerda (~40 px/s), movida
+ * por js/anuncios.js (moverEsteiras); as setas ficam sobrepostas às laterais da faixa */
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
   .anuncio-faixa .anuncio-caixa.anuncio-caixa-larga { max-width: none; }
-  .anuncio-esteira { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+  .anuncio-esteira { position: relative; }
+  .anuncio-esteira .anuncio-janela { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent);
     mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
-  .anuncio-esteira .anuncio-trilho { display: flex; align-items: center; width: max-content;
-    animation: anuncio-esteira var(--esteira-dur, 30s) linear infinite; will-change: transform; }
-  .anuncio-esteira:hover .anuncio-trilho { animation-play-state: paused; }
-  .anuncio-esteira .anuncio-grupo-copia { display: flex; align-items: center; }
+  .anuncio-esteira .anuncio-trilho { display: flex; align-items: flex-start; width: max-content; will-change: transform; }
+  .anuncio-esteira .anuncio-grupo-copia { display: flex; align-items: flex-start; }
   .anuncio-esteira .anuncio-slide { display: block; flex: none; width: 600px; margin-right: 24px; animation: none; }
   .anuncio-esteira .anuncio-pontos { display: none; }
-  .anuncio-esteira .anuncio-trilho, .anuncio-esteira .anuncio-grupo-copia { align-items: flex-start; }
+  .anuncio-esteira .anuncio-nav { position: absolute; inset: 0; margin: 0; padding: 0 4px; justify-content: space-between; pointer-events: none; }
+  .anuncio-esteira .anuncio-seta { pointer-events: auto; width: 44px; height: 44px; color: var(--ink);
+    background: var(--surface); background: color-mix(in srgb, var(--surface) 72%, transparent);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); box-shadow: 0 1px 6px rgba(0, 0, 0, .18);
+    opacity: .8; transition: opacity .2s, background .2s; }
+  .anuncio-esteira:hover .anuncio-seta, .anuncio-esteira .anuncio-seta:focus-visible { opacity: 1; }
+  .anuncio-esteira .anuncio-seta:hover { background: var(--surface); }
+
   /* quadro "Anuncie aqui" no formato do banner (600 x 150), para a fila ficar uniforme */
   .anuncio-esteira .anuncio-convite { box-sizing: border-box; width: 600px; height: 150px; padding: 12px 16px; gap: 0 14px;
     grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto auto; align-content: center; justify-items: start;
@@ -145,5 +165,4 @@
   .anuncio-esteira .anuncio-convite .anuncio-mail { grid-column: 2; grid-row: 2; align-self: center; margin-top: 6px; font-size: 12px; }
   .anuncio-esteira .anuncio-convite .anuncio-regra { grid-column: 2; grid-row: 3; align-self: start; max-width: 190px; font-size: 10.5px; line-height: 1.25; margin-top: 4px; }
   .anuncio-esteira .anuncio-num { display: block; margin-top: 3px; font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--faint); }
-  @keyframes anuncio-esteira { from { transform: translateX(0); } to { transform: translateX(calc(-100% / 3)); } }
 }

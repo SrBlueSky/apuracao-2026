@@ -183,35 +183,187 @@
             (i >= nv ? " anuncio-so-desk" : "") + '">' + q + "</div>";
         }).join("");
       };
-      var pontos = '<div class="anuncio-pontos" aria-hidden="true">' +
-        quadros.slice(0, nv).map(function (q, i) { return "<i" + (i ? "" : ' class="ativo"') + "></i>"; }).join("") + "</div>";
-      if (!esteira) return '<div class="anuncio-carrossel" data-n="' + n + '">' + slides(false) + pontos + "</div>";
-      // esteira: o grupo de quadros três vezes (a cópia é inerte), para o laço sem emenda
-      var dur = (n * (ESTEIRA_QUADRO + ESTEIRA_VAO) / ESTEIRA_VEL).toFixed(1);
-      return '<div class="anuncio-carrossel anuncio-esteira" data-n="' + n + '" style="--esteira-dur:' + dur + 's">' +
-        '<div class="anuncio-trilho">' + slides(false) +
+      var seta = function (dir) {
+        return '<button type="button" class="anuncio-seta anuncio-seta-' + (dir < 0 ? "ant" : "prox") + '" data-dir="' + dir +
+          '" aria-label="' + (dir < 0 ? "Anúncio anterior" : "Próximo anúncio") + '"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">' +
+          '<path d="' + (dir < 0 ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7") + '" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+      };
+      // setas e pontinhos clicáveis (o clique é tratado em ligarControles); no computador, na esteira,
+      // só as setas aparecem, sobrepostas às laterais da faixa
+      var nav = '<div class="anuncio-nav">' + seta(-1) + '<div class="anuncio-pontos" role="group" aria-label="Escolher anúncio">' +
+        quadros.slice(0, nv).map(function (q, i) {
+          return '<button type="button" class="anuncio-ponto' + (i ? "" : " ativo") + '" data-i="' + i + '" aria-label="Anúncio ' + (i + 1) +
+            " de " + nv + '"' + (i ? "" : ' aria-current="true"') + "></button>";
+        }).join("") + "</div>" + seta(1) + "</div>";
+      if (!esteira) return '<div class="anuncio-carrossel" data-n="' + n + '" role="group" aria-roledescription="carrossel" aria-label="Anúncios">' + slides(false) + nav + "</div>";
+      // esteira: o grupo de quadros três vezes (a cópia é inerte), para o laço sem emenda; quem move
+      // o trilho é o js (ver moverEsteiras), no ritmo de ESTEIRA_VEL px/s
+      return '<div class="anuncio-carrossel anuncio-esteira" data-n="' + n + '" role="group" aria-roledescription="carrossel" aria-label="Anúncios">' +
+        '<div class="anuncio-janela"><div class="anuncio-trilho">' + slides(false) +
         '<div class="anuncio-grupo-copia" aria-hidden="true" inert>' + slides(true) + "</div>" +
-        '<div class="anuncio-grupo-copia" aria-hidden="true" inert>' + slides(true) + "</div></div>" + pontos + "</div>";
+        '<div class="anuncio-grupo-copia" aria-hidden="true" inert>' + slides(true) + "</div></div></div>" + nav + "</div>";
     }
     return ehApp ? "" : htmlConvite(id);
   }
 
   var GIRO_MS = 7000;
   // Esteira da faixa principal (computador): largura de cada quadro e vão (px, iguais ao CSS) e
-  // velocidade (px/s); a duração da volta sai daí.
+  // velocidade (px/s).
   var ESTEIRA_QUADRO = 600, ESTEIRA_VAO = 24, ESTEIRA_VEL = 40, CONVITES_ESTEIRA = 5;
-  // Avança todos os espaços com mais de um anúncio (pausa enquanto o mouse está em cima).
+  var ESTEIRA_PASSO_MS = 400, SWIPE_PX = 40;
+
+  function slidesDoCarrossel(c) {
+    return c.querySelectorAll(".anuncio-slide:not(.anuncio-copia):not(.anuncio-so-desk)");
+  }
+
+  // Mostra o quadro "prox" (índice, com volta) de um revezamento e reinicia o relógio de 7 s dele.
+  function mostrar(c, prox) {
+    var slides = slidesDoCarrossel(c), pontos = c.querySelectorAll(".anuncio-ponto");
+    if (!slides.length) return;
+    var i = Array.prototype.findIndex.call(slides, function (s) { return s.classList.contains("ativo"); });
+    prox = ((prox % slides.length) + slides.length) % slides.length;
+    if (i >= 0) {
+      slides[i].classList.remove("ativo");
+      if (pontos[i]) { pontos[i].classList.remove("ativo"); pontos[i].removeAttribute("aria-current"); }
+    }
+    slides[prox].classList.add("ativo");
+    if (pontos[prox]) { pontos[prox].classList.add("ativo"); pontos[prox].setAttribute("aria-current", "true"); }
+    c._t = Date.now();
+  }
+
+  function indiceAtivo(c) {
+    return Array.prototype.findIndex.call(slidesDoCarrossel(c), function (s) { return s.classList.contains("ativo"); });
+  }
+
+  // Esteira ligada? (computador e movimento permitido; senão a faixa vira revezamento comum)
+  function mqEsteira() {
+    return typeof window !== "undefined" && window.matchMedia &&
+      window.matchMedia("(min-width: 1024px) and (prefers-reduced-motion: no-preference)").matches;
+  }
+  function mouseEmCima() {
+    return typeof window !== "undefined" && window.matchMedia && window.matchMedia("(any-hover: hover)").matches;
+  }
+
+  // Pausa do revezamento: mouse em cima (só onde há mouse; no toque o :hover fica preso depois do
+  // toque) ou foco de teclado dentro do carrossel.
+  function pausado(c) {
+    return (mouseEmCima() && c.matches(":hover")) || !!c.querySelector(":focus-visible");
+  }
+
+  // Avança os revezamentos cujos 7 s já passaram (a esteira ligada não usa isto).
   function girar() {
+    var agora = Date.now(), esteira = mqEsteira();
     Array.prototype.forEach.call(document.querySelectorAll(".anuncio-carrossel"), function (c) {
-      if (c.matches(":hover")) return;
-      var slides = c.querySelectorAll(".anuncio-slide:not(.anuncio-copia):not(.anuncio-so-desk)"), pontos = c.querySelectorAll(".anuncio-pontos i");
-      var i = Array.prototype.findIndex.call(slides, function (s) { return s.classList.contains("ativo"); });
-      var prox = (i + 1) % slides.length;
-      slides[i].classList.remove("ativo"); slides[prox].classList.add("ativo");
-      if (pontos[i]) pontos[i].classList.remove("ativo");
-      if (pontos[prox]) pontos[prox].classList.add("ativo");
+      if (esteira && c.classList.contains("anuncio-esteira")) return;
+      if (!c._t) { c._t = agora; return; }
+      if (pausado(c)) { c._t = agora; return; }
+      if (agora - c._t >= GIRO_MS - 250) mostrar(c, indiceAtivo(c) + 1);
     });
   }
+
+  // ---- esteira movida por js: posição x (px) no grupo, que se repete a cada "volta" (n quadros)
+  function volta(c) { return (+c.getAttribute("data-n") || 1) * (ESTEIRA_QUADRO + ESTEIRA_VAO); }
+  function suave(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+
+  // Anda um quadro (dir = 1 avança, -1 volta) com suavização; cliques seguidos somam.
+  function passoEsteira(c, dir) {
+    var passo = ESTEIRA_QUADRO + ESTEIRA_VAO, x = c._x || 0;
+    var alvo = c._anim ? c._anim.para : x;
+    irPara(c, alvo + dir * passo);
+  }
+  function irPara(c, alvo) {
+    var x = c._x || 0;
+    c._anim = { de: x, para: alvo, t0: null };
+  }
+
+  var ultimoQuadro = 0;
+  function moverEsteiras(agoraMs) {
+    var dt = ultimoQuadro ? Math.min(100, agoraMs - ultimoQuadro) : 0;
+    ultimoQuadro = agoraMs;
+    var ligada = mqEsteira();
+    Array.prototype.forEach.call(document.querySelectorAll(".anuncio-esteira"), function (c) {
+      var trilho = c.querySelector(".anuncio-trilho");
+      if (!trilho) return;
+      if (!ligada) {
+        if (c.classList.contains("esteira-js")) { c.classList.remove("esteira-js"); trilho.style.transform = ""; c._anim = null; }
+        return;
+      }
+      c.classList.add("esteira-js");
+      var v = volta(c), x = c._x || 0;
+      if (c._anim) {
+        var a = c._anim;
+        if (a.t0 == null) a.t0 = agoraMs;
+        var p = Math.min(1, (agoraMs - a.t0) / ESTEIRA_PASSO_MS);
+        x = a.de + (a.para - a.de) * suave(p);
+        if (p >= 1) { x = a.para; c._anim = null; }
+      } else if (dt && !pausado(c)) {
+        x += ESTEIRA_VEL * dt / 1000;
+      }
+      // mantém x em [0, v) (e leva a animação junto, para o laço não dar salto)
+      var k = Math.floor(x / v);
+      if (k) { x -= k * v; if (c._anim) { c._anim.de -= k * v; c._anim.para -= k * v; } }
+      c._x = x;
+      trilho.style.transform = "translate3d(" + (-x).toFixed(2) + "px,0,0)";
+    });
+    requestAnimationFrame(moverEsteiras);
+  }
+
+  // Cliques nas setas e pontinhos, swipe no toque e foco por teclado (delegados ao documento: o
+  // conteúdo dos espaços é refeito quando o anuncios.json muda).
+  function ligarControles() {
+    document.addEventListener("click", function (e) {
+      if (e.target && e.target.nodeType === 1 && e.target.closest) {
+        var b = e.target.closest(".anuncio-seta, .anuncio-ponto");
+        if (b) {
+          var c = b.closest(".anuncio-carrossel");
+          if (!c) return;
+          if (b.classList.contains("anuncio-seta")) {
+            var dir = +b.getAttribute("data-dir") || 1;
+            if (c.classList.contains("anuncio-esteira") && mqEsteira()) passoEsteira(c, dir);
+            else mostrar(c, indiceAtivo(c) + dir);
+          } else mostrar(c, +b.getAttribute("data-i") || 0);
+          return;
+        }
+        if (swipeFeito && e.target.closest(".anuncio-carrossel")) { e.preventDefault(); e.stopPropagation(); }
+      }
+    }, true);
+
+    // swipe horizontal (revezamento): limiar de SWIPE_PX, sem confundir com rolagem vertical
+    var ini = null;
+    document.addEventListener("pointerdown", function (e) {
+      swipeFeito = false;
+      var c = e.target.closest && e.target.closest(".anuncio-carrossel");
+      if (!c || (c.classList.contains("anuncio-esteira") && mqEsteira()) || e.target.closest(".anuncio-nav")) { ini = null; return; }
+      ini = { c: c, id: e.pointerId, x: e.clientX, y: e.clientY };
+    });
+    document.addEventListener("pointerup", function (e) {
+      if (!ini || ini.id !== e.pointerId) return;
+      var dx = e.clientX - ini.x, dy = e.clientY - ini.y, c = ini.c;
+      ini = null;
+      if (Math.abs(dx) >= SWIPE_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        mostrar(c, indiceAtivo(c) + (dx < 0 ? 1 : -1));
+        swipeFeito = true; // o clique que o navegador soltaria sobre um link é descartado
+        setTimeout(function () { swipeFeito = false; }, 400);
+      }
+    });
+    document.addEventListener("pointercancel", function () { ini = null; });
+
+    // foco de teclado num link da esteira que está fora da janela: traz o quadro para a vista
+    document.addEventListener("focusin", function (e) {
+      var c = e.target.closest && e.target.closest(".anuncio-esteira");
+      if (!c || !mqEsteira()) return;
+      var janela = c.querySelector(".anuncio-janela");
+      if (janela) janela.scrollLeft = 0;
+      var slide = e.target.closest(".anuncio-slide");
+      if (!slide || !slide.parentNode || slide.classList.contains("anuncio-copia")) return;
+      var passo = ESTEIRA_QUADRO + ESTEIRA_VAO, idx = Array.prototype.indexOf.call(slide.parentNode.children, slide);
+      var x = c._x || 0, ini0 = idx * passo, larg = janela ? janela.clientWidth : 0;
+      var v = volta(c), rel = (((ini0 - x) % v) + v) % v; // distância do quadro à esquerda da janela
+      var d = rel > v - ESTEIRA_QUADRO ? rel - v : rel; // quadro cortado na esquerda: volta um pouco
+      if (d < 0 || d + ESTEIRA_QUADRO > larg) irPara(c, x + d);
+    });
+  }
+  var swipeFeito = false;
 
   // ---------------------------------------------------------------- DOM (só no navegador)
   function ehApp() {
@@ -275,7 +427,9 @@
     aplicar(null); // convite já na primeira pintura (no site); o arquivo chega logo depois
     carregar();
     setInterval(carregar, INTERVALO_MS);
-    setInterval(girar, GIRO_MS);
+    ligarControles();
+    setInterval(girar, 1000);
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(moverEsteiras);
   }
 
   if (typeof window !== "undefined" && typeof document !== "undefined") {
