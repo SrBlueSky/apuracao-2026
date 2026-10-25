@@ -91,3 +91,16 @@
 .anuncio-espaco { display: block; margin-bottom: 4px; font-size: 11.5px; font-weight: 600; color: var(--faint); }
 .anuncio-prazo { display: block; margin-top: 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
 .anuncio-rodape1, .anuncio-rodape2, .anuncio-rodape3 { padding-top: 22px; }
+
+/* botão "Compartilhar" (js/compartilhar.js) */
+.btn-comp span { display: none; }
+@media (min-width: 1280px) {
+  .btn-tema.btn-comp { width: auto; height: 40px; padding: 0 14px; border-radius: 999px; gap: 6px; display: inline-flex;
+    align-items: center; font: inherit; font-weight: 700; font-size: 13.5px; color: var(--ink); }
+  .btn-comp span { display: inline; }
+  .btn-comp svg { width: 18px; height: 18px; }
+}
+.comp-texto { overflow-wrap: anywhere; background: var(--surface-2); padding: 10px 12px; border-radius: 10px; }
+.comp-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.comp-link { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.comp-copiar { grid-column: 1 / -1; }
