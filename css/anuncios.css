@@ -21,11 +21,10 @@
 .anuncio-btn:hover { opacity: .88; }
 .anuncio-regra { color: var(--faint); font-size: 12px; }
 
+/* No computador o anúncio mantém o tamanho e o empilhamento do celular: um cartão estreito,
+ * centralizado, em vez da faixa achatada que ocupava toda a largura. */
 @media (min-width: 1024px) {
-  .anuncio-faixa .anuncio-caixa { min-height: 110px; padding: 26px 28px 20px; }
-  .anuncio-faixa .anuncio-convite { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 28px; }
-  .anuncio-faixa .anuncio-regra { grid-column: 1 / -1; }
-  .anuncio-faixa .anuncio-txt strong { font-size: 1.35rem; }
+  .anuncio-faixa .anuncio-caixa { max-width: 400px; margin: 0 auto; }
 }
 
 @media print { .anuncio { display: none; } }
@@ -34,11 +33,6 @@
 .anuncio-pago.com-img { grid-template-columns: 88px minmax(0, 1fr); align-items: center; column-gap: 14px; }
 .anuncio-pago.com-img .anuncio-btn { grid-column: 1 / -1; }
 .anuncio-img { width: 88px; height: 88px; object-fit: cover; border-radius: 12px; background: var(--surface); }
-@media (min-width: 1024px) {
-  .anuncio-faixa .anuncio-pago.com-img { grid-template-columns: 120px minmax(0, 1fr) auto; }
-  .anuncio-faixa .anuncio-pago.com-img .anuncio-btn { grid-column: auto; }
-  .anuncio-faixa .anuncio-img { width: 120px; height: 80px; }
-}
 .anuncio-txt .anuncio-regra { display: block; margin-top: 6px; }
 
 /* botão "Apoie" (Pix) — js/apoio.js */
