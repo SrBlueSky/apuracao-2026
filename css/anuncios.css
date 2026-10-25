@@ -173,3 +173,9 @@
 }
 /* bolinha verde dentro da frase, logo antes do "no site agora" */
 .vis-contagem span i { display: inline-block; vertical-align: middle; margin: -2px 5px 0 1px; }
+
+/* faixa de aviso geral (js/aviso.js) */
+.aviso-geral { background: #fff4d6; border-bottom: 1px solid #f0d58a; color: #3d2f00; }
+.aviso-geral .wrap { padding-top: 12px; padding-bottom: 12px; font-size: 15px; line-height: 1.45; }
+.aviso-geral strong { font-weight: 800; }
+:root[data-theme="dark"] .aviso-geral { background: #3a2f0d; border-color: #6b5612; color: #ffe9a8; }

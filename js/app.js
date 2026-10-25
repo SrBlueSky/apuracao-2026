@@ -80,11 +80,23 @@
   // HERO
   // =====================================================================
   // Princípio do site: o placar grande é SEMPRE do 2º turno. O 1º turno só aparece na caixa de referência (#refHero).
+  // dt/ht da última totalização (horário de Brasília) -> { ms, txt "17h06" } ou null
+  function horaTotalizacao(d) {
+    var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String((d && d.dt) || "")), h = /^(\d{2}):(\d{2})/.exec(String((d && d.ht) || ""));
+    if (!m || !h) return null;
+    return { ms: Date.UTC(+m[3], +m[2] - 1, +m[1], +h[1] + 3, +h[2]), txt: h[1] + "h" + h[2] };
+  }
+
   function renderHero() {
     var vn = C.visaoNacional(S.br, PT), d = vn.d, ref = vn.ref;
     var modo = C.modoHero(d, agoraMs()), vivo = modo === "vivo";
+    // TSE parado há mais de 15 min sem chegar a 100% (ex. 25/10: divulgação pausada após a
+    // prorrogação da votação): não chamar de "ao vivo" e dizer desde quando está parado.
+    var ultima = horaTotalizacao(S.br), parado = vivo && d.pst < 100 && ultima && (agoraMs() - ultima.ms > 15 * 60 * 1000);
+    if (parado) vivo = false;
     $("heroModo").dataset.modo = modo;
-    setHtml($("heroPilula"), C.selo2(vivo) + " <span>" + (vivo ? "Ao vivo · apuração em andamento" :
+    setHtml($("heroPilula"), C.selo2(vivo) + " <span>" + (parado ? "Divulgação pausada pelo TSE · última parcial às " + ultima.txt :
+      vivo ? "Ao vivo · apuração em andamento" :
       modo === "antes" ? "Aguardando os primeiros resultados (17h)" : "Aguardando os primeiros resultados do TSE") + "</span>");
     document.querySelectorAll(".selo-2t.g").forEach(function (e) { e.classList.toggle("vivo", vivo); });
 
