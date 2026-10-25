@@ -93,12 +93,12 @@
     // TSE parado há mais de 15 min sem chegar a 100% (ex. 25/10: divulgação pausada após a
     // prorrogação da votação): não chamar de "ao vivo" e dizer desde quando está parado.
     var ultima = horaTotalizacao(S.br), parado = vivo && d.pst < 100 && ultima && (agoraMs() - ultima.ms > 15 * 60 * 1000);
-    if (parado) vivo = false;
+    var seloVivo = vivo && !parado; // os números continuam: só o selo e o texto deixam de dizer "ao vivo"
     $("heroModo").dataset.modo = modo;
-    setHtml($("heroPilula"), C.selo2(vivo) + " <span>" + (parado ? "Divulgação pausada pelo TSE · última parcial às " + ultima.txt :
+    setHtml($("heroPilula"), C.selo2(seloVivo) + " <span>" + (parado ? "Divulgação pausada pelo TSE · última parcial às " + ultima.txt :
       vivo ? "Ao vivo · apuração em andamento" :
       modo === "antes" ? "Aguardando os primeiros resultados (17h)" : "Aguardando os primeiros resultados do TSE") + "</span>");
-    document.querySelectorAll(".selo-2t.g").forEach(function (e) { e.classList.toggle("vivo", vivo); });
+    document.querySelectorAll(".selo-2t.g").forEach(function (e) { e.classList.toggle("vivo", seloVivo); });
 
     ["13", "22"].forEach(function (k) {
       var lado = k === "13" ? d.a : d.b, card = $("cand" + k);
