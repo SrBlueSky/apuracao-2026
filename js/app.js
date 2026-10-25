@@ -694,7 +694,7 @@
     var nota = $("numNota");
     if (ref) {
       nota.hidden = false;
-      setHtml(nota, '<span class="nota-lin">' + C.selo2(tem) + " Brancos e nulos juntos: " + (tem ? "<b>" + C.fmtPct(n.pbn) + "</b>" : "<b>—</b> (aguardando a apuração)") + "</span>" +
+      setHtml(nota, '<span class="nota-lin">' + "Brancos e nulos juntos: " + (tem ? "<b>" + C.fmtPct(n.pbn) + "</b>" : "<b>—</b> (aguardando a apuração)") + "</span>" +
         '<span class="nota-lin nota-ref">' + C.selo1() + " Brancos e nulos juntos: <b>" + C.fmtPct(ref.pbn) + "</b>" + (tem ? " (2º turno " + C.fmtSinal(n.dPbn) + " p.p.)" : "") +
         ' <small>Calculado como comparecimento menos votos válidos; o arquivo do 1º turno aqui guardado não separa brancos de nulos.</small></span>');
     } else nota.hidden = true;
