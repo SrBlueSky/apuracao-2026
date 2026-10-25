@@ -677,3 +677,5 @@ h1, h2, h3, p { margin: 0; }
   .btn-tema { width: 44px; height: 44px; }
   .btn-tema svg { width: 22px; height: 22px; }
 }
+/* selo do topo: só aparece quando diz algo útil (ao vivo, sem conexão, demonstração) */
+.status[data-estado="ok"], .status[data-estado="conectando"] { display: none; }

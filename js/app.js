@@ -146,7 +146,7 @@
   function renderStatus() {
     var st = $("status"), txt;
     if (DEMO) { st.dataset.estado = "demo"; txt = "Demonstração"; }
-    else if (!S.okBr) { st.dataset.estado = S.falhasBr > 0 ? "erro" : "conectando"; txt = S.falhasBr > 0 ? "Sem conexão com o TSE" : "Conectando ao TSE…"; }
+    else if (!S.okBr) { st.dataset.estado = S.falhasBr > 0 ? "erro" : "conectando"; txt = S.falhasBr > 0 ? "Sem conexão, tentando de novo" : ""; }
     else {
       var seg = Math.max(0, Math.round((Date.now() - S.okBr) / 1000));
       var quando = seg < 60 ? "há " + seg + " s" : "há " + Math.floor(seg / 60) + " min";
@@ -154,7 +154,7 @@
       else {
         var vivo = C.visaoNacional(S.br, PT).d.temVotos;
         st.dataset.estado = vivo ? "vivo" : "ok";
-        txt = (vivo ? "Ao vivo · " : "Conectado ao TSE · ") + quando;
+        txt = vivo ? "Ao vivo" : "";
       }
     }
     setTxt($("statusTxt"), txt);
