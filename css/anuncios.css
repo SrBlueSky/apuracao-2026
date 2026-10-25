@@ -88,9 +88,8 @@
 .anuncio-pontos i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
 .anuncio-pontos i.ativo { background: var(--muted); }
 
-/* contador de visitantes no topo (js/visitantes.js) */
-.visitantes { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 999px;
-  border: 1px solid var(--line); background: var(--surface); font-size: 13.5px; color: var(--muted); white-space: nowrap; flex: none; }
-.visitantes b { color: var(--ink); font-variant-numeric: tabular-nums; }
-.visitantes i { width: 8px; height: 8px; border-radius: 50%; background: #1fa855; }
-@media (max-width: 639.98px) { .visitantes .vis-hoje { display: none; } }
+/* contagem de visitantes dentro das caixas "Anuncie aqui" e na página Anuncie (js/visitantes.js) */
+.vis-contagem { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; font-size: 14px; color: var(--muted); }
+.vis-contagem[hidden] { display: none; }
+.vis-contagem b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.vis-contagem i { width: 8px; height: 8px; border-radius: 50%; background: #1fa855; flex: none; }

@@ -1,7 +1,8 @@
-/* visitantes.js — "N agora · M hoje" no topo, a partir do contador da Cloudflare
+/* visitantes.js — "N pessoas no site agora · M hoje", dentro das caixas "Anuncie aqui" e da página
+ * Anuncie (elementos com a classe vis-contagem), a partir do contador da Cloudflare
  * (functions/apuracoes/api/visitas.js). Cada navegador guarda um código aleatório anônimo e
  * avisa o contador a cada 3 minutos enquanto a página está visível. Sem resposta (ex. no endereço
- * reserva do GitHub, que não tem o contador), o selo simplesmente não aparece. */
+ * reserva do GitHub, que não tem o contador), a linha simplesmente não aparece. */
 (function (window, document) {
   "use strict";
 
@@ -22,19 +23,21 @@
 
   function fmt(n) { return Number(n).toLocaleString("pt-BR"); }
 
-  function mostrar(d) {
-    var el = document.getElementById("visitantes");
-    if (!el) {
-      var topo = document.querySelector(".topo-dir");
-      if (!topo) return;
-      el = document.createElement("span");
-      el.id = "visitantes"; el.className = "visitantes"; el.setAttribute("role", "status");
-      topo.insertBefore(el, topo.firstChild);
-    }
-    el.innerHTML = '<i aria-hidden="true"></i><b>' + fmt(d.agora) + "</b>&nbsp;agora" +
-      '<span class="vis-hoje"> · <b>' + fmt(d.hoje) + "</b>&nbsp;hoje</span>";
-    el.title = fmt(d.agora) + " pessoas no site agora · " + fmt(d.hoje) + " passaram hoje";
+  var ultimo = null;
+
+  // Preenche todas as linhas de contagem da página (as caixas de anúncio são redesenhadas de tempos
+  // em tempos, por isso anuncios.js chama Visitantes.preencher() depois de cada desenho).
+  function preencher() {
+    if (!ultimo) return;
+    var html = '<i aria-hidden="true"></i><span><b>' + fmt(ultimo.agora) + "</b> " +
+      (ultimo.agora === 1 ? "pessoa" : "pessoas") + " no site agora · <b>" + fmt(ultimo.hoje) + "</b> hoje</span>";
+    Array.prototype.forEach.call(document.querySelectorAll(".vis-contagem"), function (el) {
+      if (el._h !== html) { el._h = html; el.innerHTML = html; }
+      el.hidden = false;
+    });
   }
+
+  function mostrar(d) { ultimo = d; preencher(); }
 
   function pingar() {
     if (document.visibilityState === "hidden") return;
@@ -50,6 +53,7 @@
     document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") pingar(); });
   }
 
+  window.Visitantes = { preencher: preencher };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", iniciar);
   else iniciar();
 })(window, document);

@@ -82,7 +82,8 @@
     var mailto = "mailto:" + CONTATO + "?subject=" + encodeURIComponent(ASSUNTO);
     return '<div class="anuncio-convite">' +
       '<div class="anuncio-txt"><strong>Anuncie aqui</strong>' +
-      "<span>Seu negócio para quem acompanha a apuração ao vivo.</span></div>" +
+      "<span>Seu negócio para quem acompanha a apuração ao vivo.</span>" +
+      '<p class="vis-contagem" hidden></p></div>' +
       '<a class="anuncio-btn" href="anuncie.html">Ver espaços e preços</a>' +
       '<a class="anuncio-mail" href="' + mailto + '">' + CONTATO + "</a>" +
       '<small class="anuncio-regra">Não aceitamos anúncios de candidatos, partidos ou campanhas.</small>' +
@@ -157,6 +158,7 @@
         (lugar.formato === "faixa" ? "</div>" : "");
       if (caixa._h !== html) { caixa._h = html; caixa.innerHTML = html; }
     });
+    if (window.Visitantes) window.Visitantes.preencher();
   }
 
   function buscar(url) {
