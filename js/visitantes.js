@@ -29,8 +29,8 @@
   // em tempos, por isso anuncios.js chama Visitantes.preencher() depois de cada desenho).
   function preencher() {
     if (!ultimo) return;
-    var html = '<i aria-hidden="true"></i><span><b>' + fmt(ultimo.agora) + "</b> " +
-      (ultimo.agora === 1 ? "pessoa" : "pessoas") + " no site agora · <b>" + fmt(ultimo.hoje) + "</b> hoje</span>";
+    var html = '<i aria-hidden="true"></i><span><b>' + fmt(ultimo.hoje) + "</b> " +
+      (ultimo.hoje === 1 ? "pessoa entrou" : "pessoas entraram") + " hoje · <b>" + fmt(ultimo.agora) + "</b> no site agora</span>";
     Array.prototype.forEach.call(document.querySelectorAll(".vis-contagem"), function (el) {
       if (el._h !== html) { el._h = html; el.innerHTML = html; }
       el.hidden = false;

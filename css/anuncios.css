@@ -166,3 +166,8 @@
   .anuncio-esteira .anuncio-convite .anuncio-regra { grid-column: 2; grid-row: 3; align-self: start; max-width: 190px; font-size: 10.5px; line-height: 1.25; margin-top: 4px; }
   .anuncio-esteira .anuncio-num { display: block; margin-top: 3px; font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--faint); }
 }
+
+/* celular: troca de anúncio só deslizando (sem setas; os pontinhos ficam como indicação) */
+@media (max-width: 1023.98px) {
+  .anuncio-carrossel .anuncio-seta { display: none; }
+}
