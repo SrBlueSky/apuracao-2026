@@ -690,7 +690,7 @@ h1, h2, h3, p { margin: 0; }
   .status span { max-width: 28vw; }
 }
 /* selo do topo: só aparece quando diz algo útil (ao vivo, sem conexão, demonstração) */
-.status[data-estado="ok"], .status[data-estado="conectando"] { display: none; }
+.status[data-estado="ok"], .status[data-estado="conectando"], .status[data-estado="vivo"] { display: none; }
 
 
 /* =====================================================================

@@ -171,3 +171,5 @@
 @media (max-width: 1023.98px) {
   .anuncio-carrossel .anuncio-seta { display: none; }
 }
+/* bolinha verde dentro da frase, logo antes do "no site agora" */
+.vis-contagem span i { display: inline-block; vertical-align: middle; margin: -2px 5px 0 1px; }

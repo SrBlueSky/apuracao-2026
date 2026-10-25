@@ -1,0 +1,22 @@
+/* ajustes do site (js/ajustes-site.js) */
+.ajs-dialogo { width: min(440px, calc(100vw - 32px)); }
+.ajs-dialogo .apoio-cx { gap: 4px; }
+.ajs-dialogo .apoio-cx h2 { margin-bottom: 6px; }
+.ajs-linha { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0;
+  border-top: 1px solid var(--line); cursor: pointer; min-height: 56px; }
+.ajs-linha:first-of-type { border-top: 0; }
+.ajs-txt b { display: block; font-size: 16px; color: var(--ink); }
+.ajs-txt small { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; line-height: 1.35; }
+.ajs-linha input { position: absolute; opacity: 0; width: 52px; height: 32px; right: 0; margin: 0; cursor: pointer; }
+.ajs-chave { flex: none; width: 52px; height: 32px; border-radius: 99px; background: var(--outros); position: relative; transition: background .2s; }
+.ajs-chave::after { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .3); transition: transform .2s; }
+.ajs-linha input:checked + .ajs-chave { background: #1fa855; }
+.ajs-linha input:checked + .ajs-chave::after { transform: translateX(20px); }
+.ajs-linha input:focus-visible + .ajs-chave { outline: 2px solid var(--c22); outline-offset: 2px; }
+.ajs-linha.desativado { opacity: .55; cursor: not-allowed; }
+.ajs-linha.desativado input { cursor: not-allowed; }
+.ajs-msg { min-height: 0; font-size: 13.5px !important; color: var(--ink) !important; }
+.ajs-msg:empty { display: none; }
+.ajs-baixar { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; margin-top: 8px; }
+.ajs-dialogo .apoio-nota { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
