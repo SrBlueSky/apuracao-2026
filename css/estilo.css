@@ -12,6 +12,9 @@
   --outros: #cbc6ba;
   --gA: #0b8576;
   --gB: #c0780a;
+  --t2: #0f7a3a;                       /* selo do 2º turno (destaque) */
+  --t2-ink: #ffffff;
+  --borda-ref: color-mix(in srgb, var(--faint) 55%, var(--line));
   --mapa-vazio: #e2ded3;
   --mapa-sem: #f0ede5;                 /* mapa-múndi: país sem brasileiros votando */
   --sombra: 0 1px 2px rgba(20, 22, 28, .05), 0 8px 24px -12px rgba(20, 22, 28, .12);
@@ -27,6 +30,7 @@
     --bg: #0f1115; --surface: #171a21; --surface-2: #1e222b; --ink: #f1efe9; --muted: #a2a9b6; --faint: #6f7684;
     --line: #2a2f3a; --c13: #ff5a5a; --c22: #5b9bff; --outros: #4a4f5b; --gA: #31c2b0; --gB: #e8a93c;
     --mapa-vazio: #2a2f3a; --mapa-sem: #1d2129; --sombra: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
+    --t2: #31c26a; --t2-ink: #07210f;
     color-scheme: dark;
   }
 }
@@ -34,6 +38,7 @@
   --bg: #0f1115; --surface: #171a21; --surface-2: #1e222b; --ink: #f1efe9; --muted: #a2a9b6; --faint: #6f7684;
   --line: #2a2f3a; --c13: #ff5a5a; --c22: #5b9bff; --outros: #4a4f5b; --gA: #31c2b0; --gB: #e8a93c;
   --mapa-vazio: #2a2f3a; --mapa-sem: #1d2129; --sombra: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
+  --t2: #31c26a; --t2-ink: #07210f;
   color-scheme: dark;
 }
 
@@ -140,7 +145,6 @@ h1, h2, h3, p { margin: 0; }
 .pct-sinal { font-family: var(--serif); font-weight: 500; font-size: clamp(1.2rem, 5vw, 2.3rem); color: var(--cor); opacity: .8; }
 .cand-votos { font-size: 14px; color: var(--muted); margin-top: 4px; }
 .cand-votos b { color: var(--ink); font-weight: 700; font-size: 1.12em; }
-.cand.ref .pct-num, .cand.ref .pct-sinal { opacity: .72; }
 .selo-eleito {
   display: inline-block; margin-top: 8px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; letter-spacing: .12em;
   text-transform: uppercase; color: #fff; background: var(--cor);
@@ -238,7 +242,6 @@ h1, h2, h3, p { margin: 0; }
 .cartao-modo.vivo { background: color-mix(in srgb, #1fa855 14%, var(--surface)); color: var(--ink); }
 .mini-barra { display: flex; height: 12px; border-radius: 99px; overflow: hidden; background: var(--surface-2); position: relative; }
 .mini-barra .a { background: var(--c13); } .mini-barra .o { background: var(--outros); } .mini-barra .b { background: var(--c22); margin-left: auto; }
-.mini-barra.ref { opacity: .6; }
 .mini-barra::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--surface); opacity: .9; }
 .lin { display: grid; grid-template-columns: 10px 1fr auto; gap: 4px 10px; align-items: baseline; margin-top: 12px; }
 .lin .pt { width: 10px; height: 10px; border-radius: 3px; align-self: center; }
@@ -278,9 +281,6 @@ h1, h2, h3, p { margin: 0; }
 .uf-apur { grid-area: apur; text-align: right; font-size: 13px; color: var(--muted); min-width: 64px; }
 .uf-apur .mini-trilho { height: 4px; border-radius: 9px; background: var(--surface-2); margin-top: 4px; overflow: hidden; }
 .uf-apur .mini-trilho span { display: block; height: 100%; background: var(--ink); border-radius: 9px; transition: width .9s cubic-bezier(.2, .7, .2, 1); }
-.ufs li.uf.ref .uf-n b, .ufs li.uf.ref .uf-nome { opacity: .62; }
-.ufs li.uf.ref .uf-n.l13 b, .ufs li.uf.ref .uf-n.l22 b { color: var(--muted); }
-.tag-ref { display: inline-block; margin-left: 5px; padding: 0 5px; border-radius: 4px; font-size: 10.5px; font-weight: 800; letter-spacing: .04em; color: var(--muted); background: var(--surface-2); vertical-align: 1px; }
 .uf-barra .mini-barra { height: 8px; }
 
 /* ---------- governadores ---------- */
@@ -301,12 +301,11 @@ h1, h2, h3, p { margin: 0; }
 .gov-pct { text-align: right; font-family: var(--serif); font-weight: 800; font-size: 1.9rem; letter-spacing: -.03em; line-height: 1; color: var(--gA);  font-variant-numeric: tabular-nums;}
 .gov-c.b .gov-pct { color: var(--gB); }
 .gov-pct small { display: block; font-family: var(--sans); font-size: 12px; letter-spacing: 0; font-weight: 500; color: var(--muted); margin-top: 3px; }
-.gov-c.ref .gov-pct { opacity: .7; }
+.gov-c.sem-voto .gov-pct { color: var(--faint); font-size: 1.5rem; }
 .gov-barra { display: flex; height: 12px; border-radius: 99px; background: var(--surface-2); overflow: hidden; position: relative; }
 .gov-barra .a { background: var(--gA); } .gov-barra .b { background: var(--gB); margin-left: auto; } .gov-barra .o { background: var(--outros); }
 .gov-barra span { transition: width .9s cubic-bezier(.2, .7, .2, 1); }
 .gov-barra::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--surface); }
-.gov-barra.ref { opacity: .6; }
 .gov-rod { font-size: 13px; color: var(--muted); display: grid; gap: 4px; padding-top: 10px; border-top: 1px solid var(--line); }
 .gov-rod b { color: var(--ink); font-weight: 700; }
 .gov-prog { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
@@ -324,9 +323,12 @@ h1, h2, h3, p { margin: 0; }
 .num-valor small { font-size: .55em; font-weight: 500; opacity: .8; }
 .num-valor.vazio { color: var(--faint); }
 .num-abs { margin-top: 6px; font-size: 13.5px; color: var(--muted); }
-.num-ref { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.num-ref { margin-top: 10px; font-size: 13px; color: var(--muted); }
 .num-ref b { color: var(--ink); }
-.num-nota { margin-top: 12px; font-size: 13.5px; color: var(--muted); max-width: 80ch; }
+.num-nota { margin-top: 12px; font-size: 13.5px; color: var(--muted); max-width: 80ch; display: grid; gap: 8px; }
+.nota-lin { display: block; }
+.nota-ref { padding: 8px 12px; border: 1.5px dashed var(--borda-ref); border-radius: 12px; background: color-mix(in srgb, var(--surface-2) 70%, var(--bg)); }
+.nota-ref small { display: block; margin-top: 2px; font-size: 12px; }
 .num-nota b { color: var(--ink); }
 
 /* ---------- rodapé ---------- */
@@ -359,10 +361,10 @@ h1, h2, h3, p { margin: 0; }
 }
 @media (min-width: 900px) {
   .hero { padding: 44px 0 48px; }
-  .uf-cab, .ufs li.uf { grid-template-columns: minmax(150px, 1.3fr) minmax(160px, 2fr) 104px 104px 118px 92px; }
+  .uf-cab, .uf-grupos, .ufs li.uf { grid-template-columns: minmax(120px, 1.3fr) minmax(100px, 2fr) 80px 80px 100px 70px 64px 64px; }
   .uf-cab { display: grid; gap: 12px; padding: 0 14px 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
   .uf-cab .t13 { color: var(--c13); } .uf-cab .t22 { color: var(--c22); }
-  .ufs li.uf { grid-template-areas: "nome barra l13 l22 marg apur"; padding: 10px 14px; }
+  .ufs li.uf { grid-template-areas: "nome barra l13 l22 marg apur r13 r22"; padding: 10px 14px; }
   .uf-marg { text-align: left; }
   .uf-apur { text-align: left; }
 }
@@ -547,7 +549,7 @@ h1, h2, h3, p { margin: 0; }
   /* aba Presidente: hero em largura total */
   .hero { padding: 40px 0 52px; }
   .hero-grade { display: grid; grid-template-columns: minmax(0, 1fr) 400px; column-gap: 40px;
-    grid-template-areas: "cab painel" "duelo duelo" "barra barra" "rod rod"; align-items: start; }
+    grid-template-areas: "cab painel" "duelo duelo" "barra barra" "rod rod" "ref ref"; align-items: start; }
   .hero-grade .duelo { grid-area: duelo; margin-top: 8px; }
   .hero-grade .barra-bloco { grid-area: barra; margin-top: 30px; }
   .hero-grade .hero-rodape { grid-area: rod; }
@@ -555,7 +557,7 @@ h1, h2, h3, p { margin: 0; }
   .hero-grade .painel.dois .painel-bloco.contagem, .hero-grade .painel.dois .painel-bloco.aguardando,
   .hero-grade .painel.dois .painel-bloco.progresso { grid-column: 1; grid-row: auto; }
   /* antes das 17h / sem votos: a contagem regressiva fica ao lado do título; "urnas apuradas" desce para uma faixa própria */
-  .hero-grade.dois { grid-template-areas: "cab painel" "duelo duelo" "barra barra" "rod rod" "prog prog"; }
+  .hero-grade.dois { grid-template-areas: "cab painel" "duelo duelo" "barra barra" "rod rod" "ref ref" "prog prog"; }
   .hero-grade.dois .painel { display: contents; }
   .hero-grade.dois .painel.dois .painel-bloco.contagem, .hero-grade.dois .painel.dois .painel-bloco.aguardando { grid-area: painel; }
   .hero-grade.dois .painel.dois .painel-bloco.progresso { grid-area: prog; margin-top: 24px; }
@@ -572,6 +574,7 @@ h1, h2, h3, p { margin: 0; }
   .cand-sub { font-size: 15px; }
   .pct-num { font-size: clamp(3.4rem, 16cqw, 7.4rem); }
   .pct-sinal { font-size: clamp(1.6rem, 6.5cqw, 3rem); }
+  .cand.sem-voto .pct-num { font-size: clamp(2.6rem, 10cqw, 4.6rem); }
   .cand-votos { font-size: 17px; }
   .selo-eleito { font-size: 14px; padding: 6px 16px; }
   .barra-dupla { height: 28px; }
@@ -615,9 +618,10 @@ h1, h2, h3, p { margin: 0; }
   .mundi-zoom { margin-left: 0; order: 2; }
 
   /* aba Estados: tabela larga */
-  .uf-cab, .ufs li.uf { grid-template-columns: minmax(130px, 1.2fr) minmax(110px, 1.6fr) 104px 104px 124px 92px; column-gap: 16px; }
+  .uf-cab, .uf-grupos, .ufs li.uf { grid-template-columns: minmax(130px, 1.2fr) minmax(110px, 1.5fr) 92px 92px 124px 84px 76px 76px; column-gap: 16px; }
   .ufs li.uf { padding: 12px 18px; }
   .uf-cab { padding: 0 18px 10px; font-size: 12.5px; }
+  .uf-grupos { padding: 0 18px; }
   .uf-nome { font-size: 16.5px; }
   .uf-n { font-size: 15px; } .uf-n b { font-size: 1.2rem; }
   .uf-marg { font-size: 15px; }
@@ -651,13 +655,14 @@ h1, h2, h3, p { margin: 0; }
 @media (min-width: 1280px) {
   .abas-lista [role="tab"] { padding: 0 15px; }
   .status span { max-width: 180px; }
-  .uf-cab, .ufs li.uf { grid-template-columns: minmax(200px, 1.3fr) minmax(220px, 2.2fr) 130px 130px 150px 120px; column-gap: 24px; }
+  .uf-cab, .uf-grupos, .ufs li.uf { grid-template-columns: minmax(160px, 1.3fr) minmax(160px, 2fr) 104px 104px 130px 90px 80px 80px; column-gap: 20px; }
   .ufs li.uf { padding: 12px 20px; }
   .uf-cab { padding: 0 20px 10px; }
+  .uf-grupos { padding: 0 20px; }
 }
 @media (min-width: 1440px) {
   :root { --gut: 40px; }
-  .uf-cab, .ufs li.uf { grid-template-columns: minmax(220px, 1.2fr) minmax(280px, 2.4fr) 150px 150px 170px 140px; }
+  .uf-cab, .uf-grupos, .ufs li.uf { grid-template-columns: minmax(180px, 1.2fr) minmax(180px, 2fr) 118px 118px 150px 100px 84px 84px; }
   .gov-grade { gap: 24px; }
 }
 @media (min-width: 1700px) {
@@ -679,3 +684,134 @@ h1, h2, h3, p { margin: 0; }
 }
 /* selo do topo: só aparece quando diz algo útil (ao vivo, sem conexão, demonstração) */
 .status[data-estado="ok"], .status[data-estado="conectando"] { display: none; }
+
+
+/* =====================================================================
+   1º e 2º TURNO — linguagem visual única
+   2º turno = selo sólido verde (com bolinha quando ao vivo) e números em destaque.
+   1º turno = selo de contorno cinza e SEMPRE dentro de uma caixa de referência (.caixa-ref).
+   ===================================================================== */
+.selo-t {
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; line-height: 1.5;
+  font-family: var(--sans); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; vertical-align: middle;
+}
+.selo-2t { background: var(--t2); color: var(--t2-ink); border: 1px solid var(--t2); }
+.selo-2t.vivo::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pulso-selo 1.8s ease-out infinite; }
+@keyframes pulso-selo { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 60%, transparent); } 100% { box-shadow: 0 0 0 7px transparent; } }
+.selo-1t { background: transparent; color: var(--muted); border: 1px solid var(--faint); font-weight: 700; }
+.sec-kicker .selo-t { margin-right: 6px; }
+.cartao-g h3 .selo-t { margin-left: 8px; letter-spacing: .06em; font-weight: 700; font-size: 10.5px; }
+.cartao-g h3 .selo-2t { font-weight: 800; }
+.rank-uf-tit small .selo-t { margin-right: 4px; font-size: 10px; }
+
+.caixa-ref {
+  background: color-mix(in srgb, var(--surface-2) 65%, var(--bg)); border: 1.5px dashed var(--borda-ref); border-radius: 14px;
+  padding: 12px 14px; color: var(--muted); min-width: 0;
+}
+.caixa-ref .lin b, .caixa-ref .cartao-info .c13, .caixa-ref .cartao-info .c22 { opacity: .9; }
+.caixa-ref .mini-barra { opacity: .85; height: 9px; }
+.caixa-ref .cartao-info { border-top-color: var(--borda-ref); }
+.caixa-ref .lin { margin-top: 8px; }
+.caixa-ref .lin b { font-size: 1rem; }
+.turno-cab { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; font-size: 13px; }
+.turno-bloco { margin-top: 14px; }
+.turno-bloco .mini-barra, .caixa-ref .mini-barra { margin-top: 10px; }
+.turno-bloco + .caixa-ref { margin-top: 14px; }
+.cartao > .cartao-info { margin-top: 10px; }
+.mini-barra.vazia::after { opacity: .5; }
+
+.faixa-turno {
+  display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; margin-bottom: 14px; padding: 10px 14px; border-radius: 12px;
+  font-size: 14px; line-height: 1.4; color: var(--ink);
+}
+.faixa-turno[data-turno="1t"] { background: color-mix(in srgb, var(--surface-2) 65%, var(--bg)); border: 1.5px dashed var(--borda-ref); color: var(--muted); }
+.faixa-turno[data-turno="1t"] b { color: var(--ink); }
+.faixa-turno[data-turno="2t"] { background: color-mix(in srgb, var(--t2) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--t2) 40%, var(--line)); }
+.mapa-grade[data-turno="1t"] .mapa-caixa, .dest-grade[data-turno="1t"] .cartao-g { border-style: dashed; border-width: 1.5px; border-color: var(--borda-ref); }
+.leg-turno { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+
+/* hero: o placar grande é sempre do 2º turno */
+.hero-modo .pilula { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cand.sem-voto .pct-num { color: var(--faint); font-size: clamp(2.2rem, 9vw, 3.2rem); font-weight: 700; }
+.cand.sem-voto .pct-sinal { display: none; }
+.cand-votos b:empty { display: none; }
+.cand.sem-voto .cand-votos { font-size: 13.5px; }
+.barra-dupla.vazia .tick50 { opacity: .5; }
+
+.ref-hero { margin-top: 18px; grid-area: ref; }
+.ref-hero summary { display: flex; align-items: center; gap: 8px 12px; flex-wrap: nowrap; cursor: pointer; list-style: none; color: var(--muted); font-size: 14px; min-height: 28px; }
+.ref-hero summary::-webkit-details-marker { display: none; }
+.ref-tit { display: inline-flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
+.ref-tit b { color: var(--ink); font-weight: 700; }
+.ref-resumo { margin-left: auto; font-size: 13px; font-weight: 600; }
+.ref-hero[open] .ref-resumo { display: none; }
+.ref-seta { margin-left: auto; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform .2s; flex: none; margin-right: 4px; }
+.ref-resumo + .ref-seta { margin-left: 0; }
+.ref-hero[open] .ref-seta { transform: rotate(-135deg); }
+.ref-corpo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "l f" "bar bar" "dif dif"; gap: 8px 16px; margin-top: 12px; }
+.ref-cand { display: flex; flex-direction: column; min-width: 0; }
+.ref-cand.c13 { grid-area: l; } .ref-cand.c22 { grid-area: f; align-items: flex-end; text-align: right; }
+.ref-nome { font-size: 13px; font-weight: 600; }
+.ref-cand b { font-family: var(--serif); font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; opacity: .85; }
+.ref-cand.c13 b { color: var(--c13); } .ref-cand.c22 b { color: var(--c22); }
+.ref-cand small { font-size: 12px; }
+.ref-barra { grid-area: bar; display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--surface-2); opacity: .85; }
+.ref-barra span { height: 100%; display: block; transition: width .9s cubic-bezier(.2, .7, .2, 1); }
+.ref-barra .seg13 { background: var(--c13); border-radius: 0; } .ref-barra .seg22 { background: var(--c22); border-radius: 0; margin-left: auto; } .ref-barra .segOutros { background: var(--outros); }
+.ref-dif { grid-area: dif; font-size: 13.5px; }
+.ref-dif b { color: var(--ink); } .ref-dif .c13 { color: var(--c13); } .ref-dif .c22 { color: var(--c22); }
+@media (min-width: 900px) {
+  .ref-hero { margin-top: 22px; padding: 14px 20px; }
+  .ref-corpo { grid-template-columns: auto minmax(160px, 1fr) auto; grid-template-areas: "l bar f" "dif dif dif"; align-items: center; column-gap: 24px; }
+  .ref-cand b { font-size: 1.9rem; }
+  .ref-dif { font-size: 14.5px; }
+}
+
+/* aba Estados: duas partes por linha */
+.dica-ord { margin: -4px 0 12px; font-size: 13px; color: var(--muted); }
+.uf-grupos { display: none; }
+.uf-ref { grid-area: ref; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; padding-top: 8px; margin-top: 2px; border-top: 1px dashed var(--borda-ref); font-size: 13px; color: var(--muted); }
+.uf-ref-rot { margin-right: 2px; }
+.uf-r em { font-style: normal; font-weight: 600; }
+.uf-r b { font-weight: 700; color: var(--muted); }
+@media (max-width: 899.98px) { .ufs li.uf { grid-template-areas: "nome nome marg" "barra barra barra" "l13 l22 apur" "ref ref ref"; } }
+.ufs li.uf.sem-voto .uf-n b { color: var(--faint); font-weight: 600; }
+.ufs li.uf.sem-voto .uf-marg { color: var(--faint); font-weight: 600; }
+.mini-barra.vazia .a, .mini-barra.vazia .b, .mini-barra.vazia .o { width: 0; }
+@media (min-width: 900px) {
+  .uf-ref { display: contents; }
+  .uf-ref-rot, .uf-r em { display: none; }
+  .uf-r { padding-left: 14px; border-left: 1px dashed var(--borda-ref); align-self: stretch; display: flex; align-items: center; }
+  .uf-r.l22 { border-left: 0; padding-left: 0; }
+  .uf-r b { font-size: 1.02rem; font-weight: 600; }
+  .uf-r.l13 { grid-area: r13; } .uf-r.l22 { grid-area: r22; }
+  .uf-grupos { display: grid; gap: 12px; padding: 0 14px; margin-bottom: 6px; }
+  .uf-grupos .g2 { grid-column: 2 / 7; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--t2); padding-bottom: 6px; }
+  .uf-grupos .g1 { grid-column: 7 / 9; display: flex; align-items: center; border-bottom: 1.5px dashed var(--borda-ref); padding-bottom: 6px; }
+  .uf-cab .c1 { color: var(--muted); opacity: .8; }
+  .uf-cab .c1:nth-last-child(2) { padding-left: 14px; }
+  .uf-cab .t13.c1, .uf-cab .t22.c1 { color: var(--muted); }
+}
+@media (min-width: 1024px) { .uf-grupos { column-gap: 16px; } .uf-r b { font-size: 1.1rem; } }
+@media (min-width: 1280px) { .uf-grupos { column-gap: 20px; } }
+
+/* governadores: 2º turno em cima, 1º turno na caixinha de baixo */
+.gov-topo h3 .gov-uf { font-family: var(--sans); font-size: 12.5px; color: var(--muted); font-weight: 600; letter-spacing: 0; margin-left: 4px; }
+.gov-topo > span { flex: none; }
+.gov-ref { padding: 10px 12px; font-size: 13px; }
+.gov-ref-barra { display: flex; height: 7px; border-radius: 99px; overflow: hidden; background: var(--surface-2); margin-top: 8px; opacity: .85; }
+.gov-ref-barra .a { background: var(--gA); } .gov-ref-barra .b { background: var(--gB); margin-left: auto; } .gov-ref-barra .o { background: var(--outros); }
+.gov-ref-txt { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; }
+.gov-ref-txt .gr { display: inline-flex; align-items: center; gap: 6px; }
+.gov-ref-txt i { width: 8px; height: 8px; border-radius: 3px; background: var(--gA); flex: none; }
+.gov-ref-txt .gr.b i { background: var(--gB); }
+.gov-ref-txt b { color: var(--ink); font-weight: 700; }
+.gov-barra.vazia::after { opacity: .5; }
+
+.num-ref { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 8px 10px; }
+.num-ref .selo-t { font-size: 10px; letter-spacing: .04em; padding: 1px 8px; }
+.gov-topo .selo-2t { color: var(--t2-ink); font-size: 11px; font-weight: 800; }
+.leg-ufs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+.uf-lbl { display: none; }
+@media (max-width: 899.98px) { .uf-lbl { display: inline; font-weight: 600; color: var(--muted); margin-right: 4px; font-size: 13px; } }
+@media (min-width: 900px) { .leg-ufs { display: none; } }

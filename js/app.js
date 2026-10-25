@@ -37,7 +37,7 @@
   var S = {
     br: null, ufs: {}, gov: {}, vis: {},
     okBr: 0, falhasBr: 0, okEst: 0,
-    mapaModo: "1t", modoManual: false, onde: "brasil", ordem: "nome", agrupar: false, regiao: "",
+    mapaModo: "1t", modoManual: false, algumVoto: false, onde: "brasil", ordem: "nome", agrupar: false, regiao: "",
     fixado: null, hover: null, ordemChave: "",
     linhas: {}, govEls: {}, demoInicio: (typeof performance !== "undefined" ? performance.now() : 0)
   };
@@ -79,45 +79,41 @@
   // =====================================================================
   // HERO
   // =====================================================================
+  // Princípio do site: o placar grande é SEMPRE do 2º turno. O 1º turno só aparece na caixa de referência (#refHero).
   function renderHero() {
     var vn = C.visaoNacional(S.br, PT), d = vn.d, ref = vn.ref;
     var modo = C.modoHero(d, agoraMs()), vivo = modo === "vivo";
     $("heroModo").dataset.modo = modo;
-    setTxt($("heroPilula"), vivo ? "Ao vivo · 2º turno" :
-      modo === "antes" ? "Referência · resultado do 1º turno (04/10). O 2º turno começa a ser divulgado às 17h" :
-        "Aguardando os primeiros resultados · abaixo, o 1º turno como referência");
+    setHtml($("heroPilula"), C.selo2(vivo) + " <span>" + (vivo ? "Ao vivo · apuração em andamento" :
+      modo === "antes" ? "Aguardando os primeiros resultados (17h)" : "Aguardando os primeiros resultados do TSE") + "</span>");
+    document.querySelectorAll(".selo-2t.g").forEach(function (e) { e.classList.toggle("vivo", vivo); });
 
     ["13", "22"].forEach(function (k) {
-      var lado = k === "13" ? d.a : d.b;
-      animNum($("pct" + k), vivo ? lado.pct : (ref ? ref[k].pct : 0), d2);
-      animNum($("votos" + k), vivo ? lado.vap : (ref ? ref[k].vap : 0), C.fmtInt);
-      setTxt($("rot" + k), vivo ? "votos" : "votos no 1º turno");
-      $("cand" + k).classList.toggle("ref", !vivo);
+      var lado = k === "13" ? d.a : d.b, card = $("cand" + k);
+      card.classList.toggle("sem-voto", !vivo);
+      if (vivo) {
+        animNum($("pct" + k), lado.pct, d2);
+        animNum($("votos" + k), lado.vap, C.fmtInt);
+        setTxt($("rot" + k), "votos");
+      } else {
+        $("pct" + k)._v = undefined; $("votos" + k)._v = undefined;
+        setTxt($("pct" + k), "—"); setTxt($("votos" + k), ""); setTxt($("rot" + k), "aguardando apuração");
+      }
       $("eleito" + k).hidden = !lado.eleito;
     });
 
-    var w13 = 50, w22 = 50, wo = 0;
+    var w13 = 0, w22 = 0;
     if (vivo) { var soma = d.a.vap + d.b.vap; w13 = 100 * d.a.vap / soma; w22 = 100 - w13; }
-    else if (ref) { w13 = ref["13"].pct; w22 = ref["22"].pct; wo = Math.max(0, 100 - w13 - w22); }
-    setW($("seg13"), w13); setW($("seg22"), w22); setW($("segOutros"), wo);
+    setW($("seg13"), w13); setW($("seg22"), w22); setW($("segOutros"), 0);
+    $("barraHero").classList.toggle("vazia", !vivo);
     $("barraHero").setAttribute("aria-label", vivo
-      ? "Lula " + d2(w13) + " por cento, Flávio Bolsonaro " + d2(w22) + " por cento, dos votos válidos"
-      : ref ? "Referência do 1º turno: Lula " + d2(ref["13"].pct) + " por cento, Flávio Bolsonaro " + d2(ref["22"].pct) + " por cento" : "Barra sem dados");
+      ? "2º turno: Lula " + d2(w13) + " por cento, Flávio Bolsonaro " + d2(w22) + " por cento, dos votos válidos"
+      : "Barra do 2º turno vazia: ainda sem votos apurados");
     setTxt($("barraNota"), vivo
-      ? "Parcela de cada um nos votos válidos. A linha marca os 50%."
-      : "Referência: parcela de cada um nos votos válidos do 1º turno (04/10); em cinza, os demais candidatos (" + C.fmtPct(wo) + "). A linha marca os 50%.");
+      ? "Barra do 2º turno: parcela de cada um nos votos válidos. A linha marca os 50%."
+      : "Barra do 2º turno: aparece quando houver votos apurados. A linha marca os 50%.");
 
-    var dif;
-    if (vivo) {
-      if (d.empate || !d.lider) dif = "Votos idênticos até aqui.";
-      else dif = '<b class="c' + d.lider + '">' + esc(nomePres(d.lider)) + '</b> à frente por <b>' + C.fmtInt(d.margemVotos) +
-        ' votos</b> (' + d2(d.margemPP) + ' ponto' + (d.margemPP >= 1.005 || d.margemPP < 0.995 ? "s" : "") + ' percentuais)';
-    } else if (ref && ref["13"].vap !== ref["22"].vap) {
-      var l = ref["13"].vap > ref["22"].vap ? "13" : "22", o = l === "13" ? "22" : "13";
-      dif = 'No 1º turno, <b class="c' + l + '">' + esc(nomePres(l)) + '</b> ficou à frente de ' + esc(nomePres(o)) + ' por <b>' +
-        C.fmtInt(Math.abs(ref["13"].vap - ref["22"].vap)) + ' votos</b> (' + d2(Math.abs(ref["13"].pct - ref["22"].pct)) + ' pontos percentuais)';
-    } else dif = "&nbsp;";
-    setHtml($("heroDif"), dif);
+    renderRefHero(ref, vivo);
 
     var ele = d.eleito;
     $("heroEleito").hidden = !ele;
@@ -131,6 +127,25 @@
     setW($("progBarra"), d.pst);
     setTxt($("progDet"), d.secTot > 0 ? C.fmtInt(d.secApur) + " de " + C.fmtInt(d.secTot) + " seções totalizadas" : "Aguardando o TSE");
     setTxt($("heroAtual"), d.atualizacao.longo);
+  }
+
+  // Caixa "Como foi no 1º turno (04/10)": aberta antes de haver votos; recolhida ("Comparar com o 1º turno") quando o 2º turno está ao vivo.
+  function renderRefHero(ref, vivo) {
+    var box = $("refHero"); if (!box) return;
+    box.hidden = !ref;
+    if (!ref) return;
+    var ant = box._vivo;
+    if (ant !== vivo) { box._vivo = vivo; box.open = !vivo; }       // só na troca de modo: não fecha o que a pessoa abriu
+    setTxt($("refTit"), vivo ? "Comparar com o 1º turno (04/10)" : "Como foi no 1º turno (04/10)");
+    setTxt($("ref13"), C.fmtPct(ref["13"].pct)); setTxt($("ref22"), C.fmtPct(ref["22"].pct));
+    setTxt($("refv13"), C.fmtInt(ref["13"].vap) + " votos"); setTxt($("refv22"), C.fmtInt(ref["22"].vap) + " votos");
+    setTxt($("refResumo"), "Lula " + C.fmtPct(ref["13"].pct) + " · Flávio " + C.fmtPct(ref["22"].pct));
+    var w13 = ref["13"].pct, w22 = ref["22"].pct;
+    setW($("rseg13"), w13); setW($("rseg22"), w22); setW($("rsegOutros"), Math.max(0, 100 - w13 - w22));
+    $("refBarra").setAttribute("aria-label", "1º turno: Lula " + d2(w13) + " por cento, Flávio Bolsonaro " + d2(w22) + " por cento");
+    var cinza = Math.max(0, 100 - w13 - w22);
+    var dif = cinza > 0.005 ? "Em cinza na barra, os demais candidatos (" + C.fmtPct(cinza) + ")." : "&nbsp;";
+    setHtml($("refDif"), dif);
   }
 
   function tickRelogio() {
@@ -182,14 +197,46 @@
     else { delete node.dataset.l; delete node.dataset.b; }
   }
 
+  var TXT_MAPA_1T = "Resultado final do 1º turno (04/10), colorido pelo mais votado entre Lula e Flávio em cada estado. Os demais candidatos não entram na cor.";
+  var TXT_MAPA_2T = "Cada estado leva a cor de quem está à frente no 2º turno; quanto mais intensa, maior a vantagem. Cinza: ainda sem votos apurados.";
+
+  // Faixa explícita acima do mapa (Brasil e exterior): diz qual turno está desenhado.
+  function faixaTurno(modo) {
+    var inicio = agoraMs() >= C.INICIO_DIVULGACAO_MS;
+    if (modo === "1t") {
+      return { turno: "1t", html: C.selo1() + "<span><b>Mostrando o 1º turno (04/10).</b> " + (S.algumVoto
+        ? "Para ver o 2º turno, escolha “2º turno (ao vivo)” acima."
+        : inicio ? "O mapa do 2º turno aparece assim que o TSE publicar os primeiros votos."
+          : "O mapa do 2º turno aparece quando a apuração começar, às 17h.") + "</span>" };
+    }
+    if (!S.algumVoto) {
+      return { turno: "2t", html: C.selo2(false) + "<span><b>Mostrando o 2º turno.</b> Ainda sem votos apurados: o mapa fica cinza até a apuração começar" + (inicio ? "." : " (17h).") + "</span>" };
+    }
+    return null;
+  }
+  // o selo do título acompanha o turno que está desenhado no mapa
+  function renderKickerMapa() {
+    var ext = S.onde === "exterior";
+    setHtml($("kickerMapa"), (S.mapaModo === "1t" ? C.selo1() : C.selo2(S.algumVoto)) + (ext ? " Presidente · voto de brasileiros no exterior" : " Presidente por estado"));
+  }
+  function renderFaixaMapa() {
+    var f = $("faixaMapa"); if (!f) return;
+    var x = faixaTurno(S.mapaModo);
+    f.hidden = !x;
+    if (x) { f.dataset.turno = x.turno; setHtml(f, x.html); }
+    ["brasilGrade", "mundiGrade"].forEach(function (id) { var g = $(id); if (g) g.dataset.turno = S.mapaModo; });
+    setHtml($("rankUfNota"), S.mapaModo === "1t" ? C.selo1() + " por vantagem" : (S.algumVoto ? "por vantagem" : "sem votos ainda"));
+    var lt = $("legTurno");
+    if (lt) setHtml(lt, S.mapaModo === "1t" ? C.selo1() + " cores do 1º turno" : C.selo2(S.algumVoto) + " cores do 2º turno");
+  }
+
   function renderMapa() {
     var box = $("mapaBox");
     box.querySelectorAll("path[data-uf]").forEach(function (p) { if (S.vis[p.dataset.uf]) pintar(p, S.vis[p.dataset.uf]); });
     if (S.vis.zz) pintar($("chipZZ"), S.vis.zz);
-    if (S.onde === "brasil") setTxt($("mapaSub"), S.mapaModo === "2t"
-      ? "Cada estado leva a cor de quem está à frente no 2º turno; quanto mais intensa, maior a vantagem. Cinza: ainda sem votos apurados."
-      : "Resultado final do 1º turno (04/10), colorido pelo mais votado entre Lula e Flávio em cada estado. Os demais candidatos não entram na cor.");
+    if (S.onde === "brasil") setTxt($("mapaSub"), S.mapaModo === "2t" ? TXT_MAPA_2T : TXT_MAPA_1T);
     $("ctlMapa").querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.modo === S.mapaModo)); });
+    renderFaixaMapa(); renderKickerMapa();
     var sel = S.fixado || null;
     box.querySelectorAll("path.sel").forEach(function (p) { if (p.dataset.uf !== sel) p.classList.remove("sel"); });
     if (sel) { var p = box.querySelector('path[data-uf="' + sel + '"]'); if (p) p.classList.add("sel"); }
@@ -205,63 +252,73 @@
       return h + "</span>";
     }
     $("legenda").innerHTML =
+      '<div class="leg-turno" id="legTurno"></div>' +
       '<div class="leg-linha"><span class="leg-nome" style="color:var(--c13)">Lula à frente</span>' + esc5("s13") + '<span class="leg-rot">vantagem: de menos de 2 a mais de 20 pontos percentuais</span></div>' +
       '<div class="leg-linha"><span class="leg-nome" style="color:var(--c22)">Flávio à frente</span>' + esc5("s22") + '<span class="leg-rot">mesma escala</span></div>' +
       '<div class="leg-linha"><span class="leg-nome">Sem votos</span><span class="leg-esc vazio"><i></i></span><span class="leg-rot">ainda não apurado (ou empate exato)</span></div>';
   }
 
   function cartaoVazio() {
-    var ufsVotos = 0, l13 = 0, l22 = 0;
+    var n2 = 0, a13 = 0, a22 = 0, n1 = 0, b13 = 0, b22 = 0;
     C.UFS.forEach(function (uf) {
       var v = S.vis[uf]; if (!v) return;
-      var x = lideranca(v, S.mapaModo);
-      if (x.l) { if (x.l === "13") l13++; else l22++; }
-      if (S.mapaModo === "1t" ? !!x.l : v.d.temVotos) ufsVotos++;
+      var x2 = lideranca(v, "2t"), x1 = lideranca(v, "1t");
+      if (v.d.temVotos) n2++;
+      if (x2.l) { if (x2.l === "13") a13++; else a22++; }
+      if (x1.l) { n1++; if (x1.l === "13") b13++; else b22++; }
     });
-    var quem = S.mapaModo === "1t" ? "no 1º turno" : "no 2º turno";
-    var resumo = ufsVotos > 0
-      ? '<p class="cartao-info" style="border:0;padding:0;margin-top:14px"><span>Entre os 28 locais de votação (27 estados e exterior), <b>' + ufsVotos + '</b> ' + (S.mapaModo === "1t" ? "têm resultado" : "já têm votos apurados") + ' ' + quem + '.</span>' +
-        '<span><span class="c13">Lula lidera em ' + l13 + '</span> · <span class="c22">Flávio lidera em ' + l22 + '</span></span></p>'
-      : '<p class="cartao-info" style="border:0;padding:0;margin-top:14px"><span class="mut">Nenhum estado tem votos apurados ainda. Troque para “1º turno” para ver a referência.</span></p>';
-    return '<h3><small>Detalhes</small>Escolha um estado</h3><p class="cartao-vazio" style="margin-top:10px">Passe o mouse (ou toque) em um estado do mapa para ver a votação, a apuração e a comparação com o 1º turno.</p>' + resumo;
+    var h = '<h3><small>Detalhes</small>Escolha um estado</h3><p class="cartao-vazio" style="margin-top:10px">Passe o mouse (ou toque) em um estado do mapa para ver a votação do 2º turno e, separado, como foi o 1º turno.</p>';
+    h += '<section class="turno-bloco"><p class="turno-cab">' + C.selo2(n2 > 0) + '</p>' + (n2 > 0
+      ? '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span>Entre os 28 locais de votação (27 estados e exterior), <b>' + n2 + '</b> já têm votos apurados.</span>' +
+        '<span><span class="c13">Lula lidera em ' + a13 + '</span> · <span class="c22">Flávio lidera em ' + a22 + '</span></span></p>'
+      : '<p class="cartao-info mut" style="border:0;padding:0;margin-top:8px"><span class="mut">Nenhum estado tem votos apurados ainda.</span></p>') + '</section>';
+    h += '<section class="caixa-ref"><p class="turno-cab">' + C.selo1() + '</p>' + (n1 > 0
+      ? '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span><span class="c13">Lula liderou em ' + b13 + '</span> · <span class="c22">Flávio liderou em ' + b22 + '</span> (27 estados e exterior)</span></p>'
+      : '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span class="mut">Sem dados do 1º turno.</span></p>') + '</section>';
+    return h;
+  }
+
+  function linhaCartao(cls, nome, pct, votos) {
+    return '<div class="lin ' + cls + '"><span class="pt"></span><span>' + esc(nome) + '</span><b>' + C.fmtPct(pct) + '</b><span class="v">' + C.fmtInt(votos) + ' votos</span></div>';
   }
 
   function cartaoHtml(uf) {
     var v = S.vis[uf]; if (!v) return cartaoVazio();
-    var ref = v.ref, d = v.d, info = v.info;
-    var usaRef = S.mapaModo === "1t" || !d.temVotos;
+    var ref = v.ref, d = v.d, info = v.info, live = d.temVotos;
     var h = '<h3><small>' + esc(info.regiao || "") + '</small>' + esc(info.nome) + '</h3>';
-    var a, b, o = 0, va, vb;
-    if (!usaRef) { a = d.a.pct; b = d.b.pct; va = d.a.vap; vb = d.b.vap; }
-    else if (ref) { a = ref["13"].pct; b = ref["22"].pct; o = ref.outros; va = ref["13"].vap; vb = ref["22"].vap; }
-    else { a = 0; b = 0; va = 0; vb = 0; }
-    var sum = a + b + o || 1;
-    var wa = !usaRef ? 100 * a / sum : a, wb = !usaRef ? 100 * b / sum : b, wo = !usaRef ? 0 : o;
-    h += '<span class="cartao-modo ' + (usaRef ? "" : "vivo") + '">' +
-      (!usaRef ? "2º turno · ao vivo" : S.mapaModo === "1t" ? "1º turno (04/10) · resultado final" : "Sem votos apurados no 2º turno · mostrando o 1º turno") + '</span>';
-    h += '<div class="mini-barra ' + (usaRef && S.mapaModo === "2t" ? "ref" : "") + '"><span class="a" style="width:' + wa.toFixed(2) + '%"></span><span class="o" style="width:' + wo.toFixed(2) + '%"></span><span class="b" style="width:' + wb.toFixed(2) + '%"></span></div>';
-    h += '<div class="lin c13"><span class="pt"></span><span>Lula</span><b>' + C.fmtPct(a) + '</b><span class="v">' + C.fmtInt(va) + ' votos</span></div>';
-    h += '<div class="lin c22"><span class="pt"></span><span>Flávio Bolsonaro</span><b>' + C.fmtPct(b) + '</b><span class="v">' + C.fmtInt(vb) + ' votos</span></div>';
-    if (usaRef && o > 0) h += '<p class="cartao-info"><span class="mut">Demais candidatos no 1º turno: ' + C.fmtPct(o) + ' dos votos válidos.</span></p>';
-    h += '<div class="cartao-info">';
-    if (!usaRef) {
+    // ---- 2º turno (bloco principal)
+    h += '<section class="turno-bloco"><p class="turno-cab">' + C.selo2(live) + (live ? "" : ' <span class="mut">ainda sem votos apurados</span>') + '</p>';
+    if (live) {
+      var sum = (d.a.vap + d.b.vap) || 1;
+      h += '<div class="mini-barra"><span class="a" style="width:' + (100 * d.a.vap / sum).toFixed(2) + '%"></span><span class="b" style="width:' + (100 * d.b.vap / sum).toFixed(2) + '%"></span></div>';
+      h += linhaCartao("c13", "Lula", d.a.pct, d.a.vap) + linhaCartao("c22", "Flávio Bolsonaro", d.b.pct, d.b.vap);
+      h += '<div class="cartao-info">';
       h += d.lider
         ? '<span>Vantagem: <span class="c' + d.lider + '">' + esc(nomePres(d.lider)) + ' +' + d2(d.margemPP) + ' p.p.</span> (' + C.fmtInt(d.margemVotos) + ' votos)</span>'
         : '<span>Votos idênticos até aqui.</span>';
-      h += '<span>Urnas apuradas: <b>' + C.fmtPct(d.pst) + '</b> (' + C.fmtInt(d.secApur) + ' de ' + C.fmtInt(d.secTot) + ' seções)</span>';
-      if (ref) {
-        h += '<span class="mut">No 1º turno: Lula ' + C.fmtPct(ref["13"].pct) + ' · Flávio ' + C.fmtPct(ref["22"].pct) + '</span>';
-        h += '<span class="mut">Variação sobre o 1º turno: Lula ' + C.fmtSinal(v.var13) + ' p.p. · Flávio ' + C.fmtSinal(v.var22) + ' p.p.</span>';
-      }
-    } else if (ref) {
+      h += '<span>Urnas apuradas: <b>' + C.fmtPct(d.pst) + '</b> (' + C.fmtInt(d.secApur) + ' de ' + C.fmtInt(d.secTot) + ' seções)</span></div>';
+    } else {
+      h += '<div class="mini-barra vazia"><span class="a"></span><span class="b"></span></div>';
+      h += '<p class="cartao-vazio" style="margin-top:10px">Aguardando a apuração do 2º turno. Urnas apuradas: ' + C.fmtPct(d.pst) + '.</p>';
+    }
+    h += '</section>';
+    // ---- 1º turno (caixa de referência)
+    h += '<section class="caixa-ref"><p class="turno-cab">' + C.selo1() + (S.mapaModo === "1t" ? ' <span class="mut">cor do mapa agora</span>' : "") + '</p>';
+    if (ref) {
+      h += '<div class="mini-barra"><span class="a" style="width:' + ref["13"].pct.toFixed(2) + '%"></span><span class="o" style="width:' + ref.outros.toFixed(2) + '%"></span><span class="b" style="width:' + ref["22"].pct.toFixed(2) + '%"></span></div>';
+      h += linhaCartao("c13", "Lula", ref["13"].pct, ref["13"].vap) + linhaCartao("c22", "Flávio Bolsonaro", ref["22"].pct, ref["22"].vap);
+      h += '<div class="cartao-info">';
+      if (ref.outros > 0) h += '<span class="mut">Demais candidatos: ' + C.fmtPct(ref.outros) + ' dos votos válidos.</span>';
       if (ref["13"].vap !== ref["22"].vap) {
         var l = ref["13"].vap > ref["22"].vap ? "13" : "22";
         h += '<span>Vantagem: <span class="c' + l + '">' + esc(nomePres(l)) + ' +' + d2(Math.abs(ref["13"].pct - ref["22"].pct)) + ' p.p.</span> (' + C.fmtInt(Math.abs(ref["13"].vap - ref["22"].vap)) + ' votos)</span>';
       }
-      if (ref.pc !== null) h += '<span class="mut">Comparecimento no 1º turno: ' + C.fmtPct(ref.pc) + '</span>';
-    }
-    if (v.eleitorado > 0) h += '<span class="mut">Eleitorado: ' + C.fmtInt(v.eleitorado) + '</span>';
-    h += '</div>';
+      if (ref.pc !== null) h += '<span class="mut">Comparecimento: ' + C.fmtPct(ref.pc) + '</span>';
+      if (live) h += '<span class="mut">Variação do 2º turno sobre o 1º: Lula ' + C.fmtSinal(v.var13) + ' p.p. · Flávio ' + C.fmtSinal(v.var22) + ' p.p.</span>';
+      h += '</div>';
+    } else h += '<p class="cartao-vazio" style="margin-top:8px">Sem dados do 1º turno.</p>';
+    h += '</section>';
+    if (v.eleitorado > 0) h += '<p class="cartao-info"><span class="mut">Eleitorado: ' + C.fmtInt(v.eleitorado) + '</span></p>';
     return h;
   }
 
@@ -366,19 +423,22 @@
     C.UFS.forEach(function (uf) {
       var info = C.UF_INFO[uf];
       var li = document.createElement("li");
-      li.className = "uf ref"; li.dataset.uf = uf;
+      li.className = "uf sem-voto"; li.dataset.uf = uf;
       li.innerHTML =
         '<div class="uf-nome">' + esc(info.nome) + (uf === "zz" ? "" : "<small>" + uf.toUpperCase() + "</small>") + "</div>" +
-        '<div class="uf-barra"><div class="mini-barra ref"><span class="a"></span><span class="o"></span><span class="b"></span></div></div>' +
-        '<div class="uf-n l13"><b data-r="p13">—</b><span class="d" data-r="d13"></span></div>' +
-        '<div class="uf-n l22"><b data-r="p22">—</b><span class="d" data-r="d22"></span></div>' +
+        '<div class="uf-barra"><div class="mini-barra vazia"><span class="a"></span><span class="o"></span><span class="b"></span></div></div>' +
+        '<div class="uf-n l13"><span class="uf-lbl">Lula</span><b data-r="p13">—</b><span class="d" data-r="d13"></span></div>' +
+        '<div class="uf-n l22"><span class="uf-lbl">Flávio</span><b data-r="p22">—</b><span class="d" data-r="d22"></span></div>' +
         '<div class="uf-marg" data-r="marg">—</div>' +
-        '<div class="uf-apur"><span data-r="apur">—</span><div class="mini-trilho"><span></span></div></div>';
+        '<div class="uf-apur"><span data-r="apur">—</span><div class="mini-trilho"><span></span></div></div>' +
+        '<div class="uf-ref"><span class="uf-ref-rot">' + C.selo1() + '</span>' +
+        '<span class="uf-r l13"><em>Lula</em> <b data-r="r13">—</b></span><span class="uf-r l22"><em>Flávio</em> <b data-r="r22">—</b></span></div>';
       var q = function (s) { return li.querySelector(s); };
       S.linhas[uf] = {
         li: li, a: q(".mini-barra .a"), o: q(".mini-barra .o"), b: q(".mini-barra .b"), barra: q(".mini-barra"),
         p13: q('[data-r="p13"]'), p22: q('[data-r="p22"]'), d13: q('[data-r="d13"]'), d22: q('[data-r="d22"]'),
-        marg: q('[data-r="marg"]'), apur: q('[data-r="apur"]'), trilho: q(".mini-trilho span")
+        marg: q('[data-r="marg"]'), apur: q('[data-r="apur"]'), trilho: q(".mini-trilho span"),
+        r13: q('[data-r="r13"]'), r22: q('[data-r="r22"]')
       };
       li.addEventListener("pointerenter", function () {
         var p = $("mapaBox").querySelector('path[data-uf="' + uf + '"]'); if (p) p.classList.add("hl");
@@ -407,18 +467,18 @@
     var vis = C.UFS.map(function (uf) { return S.vis[uf]; }).filter(Boolean);
     vis.forEach(function (v) {
       var L = S.linhas[v.uf], d = v.d, ref = v.ref, live = d.temVotos;
-      L.li.classList.toggle("ref", !live);
-      var pa, pb, wa, wb, wo = 0;
-      if (live) { pa = d.a.pct; pb = d.b.pct; var s = d.a.vap + d.b.vap; wa = 100 * d.a.vap / s; wb = 100 - wa; }
-      else if (ref) { pa = ref["13"].pct; pb = ref["22"].pct; wa = pa; wb = pb; wo = ref.outros; }
-      else { pa = 0; pb = 0; wa = 50; wb = 50; }
-      L.barra.classList.toggle("ref", !live);
-      setW(L.a, wa); setW(L.b, wb); setW(L.o, wo);
-      var tag = live ? "" : ' <span class="tag-ref" title="Resultado do 1º turno">1º T</span>';
-      setHtml(L.p13, (live || ref) ? C.fmtPct(pa) + tag : "—");
-      setHtml(L.p22, (live || ref) ? C.fmtPct(pb) + tag : "—");
-      setTxt(L.d13, live ? C.fmtSinal(v.var13) + " p.p. vs 1º T" : "");
-      setTxt(L.d22, live ? C.fmtSinal(v.var22) + " p.p. vs 1º T" : "");
+      L.li.classList.toggle("sem-voto", !live);
+      // 2º turno: só dados do 2º turno ("—" enquanto não há votos). O 1º turno fica nas colunas próprias (r13, r22).
+      L.barra.classList.toggle("vazia", !live);
+      if (live) { var s = d.a.vap + d.b.vap; setW(L.a, 100 * d.a.vap / s); setW(L.b, 100 * d.b.vap / s); }
+      else { setW(L.a, 0); setW(L.b, 0); }
+      setW(L.o, 0);
+      setTxt(L.p13, live ? C.fmtPct(d.a.pct) : "—");
+      setTxt(L.p22, live ? C.fmtPct(d.b.pct) : "—");
+      setTxt(L.d13, live && v.var13 !== null ? C.fmtSinal(v.var13) + " p.p. vs 1º turno" : "");
+      setTxt(L.d22, live && v.var22 !== null ? C.fmtSinal(v.var22) + " p.p. vs 1º turno" : "");
+      setTxt(L.r13, ref ? C.fmtPct(ref["13"].pct) : "—");
+      setTxt(L.r22, ref ? C.fmtPct(ref["22"].pct) : "—");
       if (live && d.lider) {
         L.marg.className = "uf-marg c" + d.lider;
         setHtml(L.marg, esc(C.PRES[d.lider].curto) + " +" + d2(d.margemPP) + " p.p.<small>" + C.fmtInt(d.margemVotos) + " votos</small>");
@@ -427,6 +487,8 @@
       setTxt(L.apur, C.fmtPct(d.pst, 1));
       setW(L.trilho, d.pst);
     });
+    var dica = $("dicaOrd");
+    if (dica) dica.hidden = S.algumVoto || !(S.ordem === "lula" || S.ordem === "flavio" || S.ordem === "margem");
 
     if (S.regiao) vis = vis.filter(function (v) { return v.info.regiao === S.regiao; });
     var ord = C.ordenarUFs(vis, S.ordem);
@@ -479,13 +541,14 @@
       art.className = "gov-card"; art.dataset.uf = uf;
       art.setAttribute("aria-label", "Governador, " + C.UF_INFO[uf].nome);
       art.innerHTML =
-        '<div class="gov-topo"><h3>' + esc(C.UF_INFO[uf].nome) + '</h3><span>' + uf.toUpperCase() + '</span></div>' +
+        '<div class="gov-topo"><h3>' + esc(C.UF_INFO[uf].nome) + ' <span class="gov-uf">' + uf.toUpperCase() + '</span></h3><span data-r="selo">' + C.selo2(false) + '</span></div>' +
         linhaGov("a", "ca") + linhaGov("b", "cb") +
-        '<div class="gov-barra ref"><span class="a"></span><span class="o"></span><span class="b"></span></div>' +
+        '<div class="gov-barra vazia"><span class="a"></span><span class="o"></span><span class="b"></span></div>' +
         '<div class="gov-prog"><div class="trilho"><span class="trilho-fill" data-r="trilho"></span></div><span data-r="prog">0,00% das urnas</span></div>' +
-        '<div class="gov-rod" data-r="rod"></div>';
+        '<div class="gov-rod" data-r="rod"></div>' +
+        '<div class="caixa-ref gov-ref" data-r="ref"></div>';
       var q = function (s) { return art.querySelector(s); };
-      var els = { art: art, barra: q(".gov-barra"), a: q(".gov-barra .a"), o: q(".gov-barra .o"), b: q(".gov-barra .b"), trilho: q('[data-r="trilho"]'), prog: q('[data-r="prog"]'), rod: q('[data-r="rod"]') };
+      var els = { art: art, barra: q(".gov-barra"), a: q(".gov-barra .a"), o: q(".gov-barra .o"), b: q(".gov-barra .b"), trilho: q('[data-r="trilho"]'), prog: q('[data-r="prog"]'), rod: q('[data-r="rod"]'), ref: q('[data-r="ref"]'), selo: q('.gov-topo [data-r="selo"]') };
       ["ca", "cb"].forEach(function (k) {
         var r = q('[data-r="' + k + '"]');
         els[k] = { row: r, foto: r.querySelector(".gov-foto"), nome: r.querySelector('[data-r="nome"]'), selo: r.querySelector('[data-r="selo"]'),
@@ -511,30 +574,37 @@
           setTxt(E.sub, id.sg + " · " + id.n + (id.vice ? " · vice " + id.vice : ""));
         }
         E.selo.hidden = !lado.eleito;
-        E.row.classList.toggle("ref", !live);
-        var pct = live ? lado.pct : (ref && ref[id.n] ? ref[id.n].pct : null);
-        var vot = live ? lado.vap : (ref && ref[id.n] ? ref[id.n].vap : null);
-        animNum(E.pct, pct === null ? 0 : pct, function (x) { return pct === null ? "—" : C.fmtPct(x); });
-        setTxt(E.votos, vot === null ? "" : C.fmtInt(vot) + (live ? " votos" : " votos no 1º turno"));
+        E.row.classList.toggle("sem-voto", !live);
+        // bloco principal: só 2º turno. Sem votos: "—" (o 1º turno fica na caixinha de baixo)
+        if (live) animNum(E.pct, lado.pct, C.fmtPct);
+        else { E.pct._v = undefined; setTxt(E.pct, "—"); }
+        setTxt(E.votos, live ? C.fmtInt(lado.vap) + " votos" : "aguardando apuração");
       });
-      var wa = 50, wb = 50, wo = 0;
+      var wa = 0, wb = 0;
       if (live) { var s = disp.a.vap + disp.b.vap; wa = 100 * disp.a.vap / s; wb = 100 - wa; }
-      else if (ref) { wa = ref[v.nums[0]] ? ref[v.nums[0]].pct : 0; wb = ref[v.nums[1]] ? ref[v.nums[1]].pct : 0; wo = Math.max(0, 100 - wa - wb); }
-      G.barra.classList.toggle("ref", !live);
-      setW(G.a, wa); setW(G.b, wb); setW(G.o, wo);
+      G.barra.classList.toggle("vazia", !live);
+      setW(G.a, wa); setW(G.b, wb); setW(G.o, 0);
       setW(G.trilho, disp.pst);
+      setHtml(G.selo, C.selo2(live));
       setTxt(G.prog, d ? C.fmtPct(disp.pst) + " das urnas apuradas" : "Aguardando o TSE");
       var rod = "";
-      if (ref) {
-        rod += "<span>1º turno: " + v.nums.map(function (n, i) {
-          return "<b>" + esc(ids[i].nome) + "</b> " + (ref[n] ? C.fmtPct(ref[n].pct) : "—");
-        }).join(" · ") + "</span>";
-      }
       if (live && disp.lider) {
         var li = disp.lider === v.nums[0] ? 0 : 1;
         rod += "<span>Vantagem: <b>" + esc(ids[li].nome) + "</b> +" + d2(disp.margemPP) + " p.p. (" + C.fmtInt(disp.margemVotos) + " votos)</span>";
       } else if (!live) rod += "<span>Resultado do 2º turno ainda não apurado.</span>";
       setHtml(G.rod, rod);
+      // caixinha do 1º turno (referência, separada)
+      var rh = "";
+      if (ref) {
+        var r0 = ref[v.nums[0]] ? ref[v.nums[0]].pct : 0, r1 = ref[v.nums[1]] ? ref[v.nums[1]].pct : 0;
+        rh = '<p class="turno-cab">' + C.selo1() + '</p>' +
+          '<div class="gov-ref-barra"><span class="a" style="width:' + r0.toFixed(2) + '%"></span><span class="o" style="width:' + Math.max(0, 100 - r0 - r1).toFixed(2) + '%"></span><span class="b" style="width:' + r1.toFixed(2) + '%"></span></div>' +
+          '<p class="gov-ref-txt">' + v.nums.map(function (n, i) {
+            return '<span class="gr' + (i ? " b" : " a") + '"><i></i>' + esc(ids[i].nome) + " <b>" + (ref[n] ? C.fmtPct(ref[n].pct) : "—") + "</b></span>";
+          }).join("") + "</p>";
+      }
+      G.ref.hidden = !ref;
+      setHtml(G.ref, rh);
     });
   }
 
@@ -550,7 +620,7 @@
     NUM_CARDS.forEach(function (c) {
       var art = document.createElement("article");
       art.className = "num-card"; art.id = "num-" + c.id;
-      art.innerHTML = "<h3>" + esc(c.titulo) + '</h3><p class="num-valor vazio" data-r="v">—</p><p class="num-abs" data-r="abs"></p><p class="num-ref" data-r="ref" hidden></p>';
+      art.innerHTML = "<h3>" + esc(c.titulo) + '</h3><p class="num-valor vazio" data-r="v">—</p><p class="num-abs" data-r="abs"></p><p class="num-ref caixa-ref" data-r="ref" hidden></p>';
       g.appendChild(art);
     });
     var nota = document.createElement("p");
@@ -569,20 +639,22 @@
       r.hidden = !refHtml; setHtml(r, refHtml || "");
     }
     var ref = n.ref;
-    function dtxt(x) { return x === null || x === undefined ? "" : " (" + C.fmtSinal(x) + " p.p.)"; }
-    card("pc", n.pc, tem ? C.fmtInt(n.comparecimento) + " eleitores votaram" : "Eleitorado: " + C.fmtInt(n.eleitorado),
-      ref ? "1º turno: <b>" + C.fmtPct(ref.pc) + "</b>" + dtxt(n.dPc) : "");
-    card("pa", n.pa, tem ? C.fmtInt(n.abstencao) + " eleitores não compareceram" : "Quem não vota entra aqui quando houver apuração",
-      ref ? "1º turno: <b>" + C.fmtPct(ref.pa) + "</b>" + dtxt(n.dPa) : "");
-    card("pb", n.pvb, tem ? C.fmtInt(n.brancos) + " votos" : "Percentual sobre o total de votos", "");
-    card("pn", n.ptvn, tem ? C.fmtInt(n.nulos) + " votos" : "Percentual sobre o total de votos", "");
+    function dtxt(x) { return x === null || x === undefined ? "" : " (2º turno " + C.fmtSinal(x) + " p.p.)"; }
+    function refLin(pct, d) { return C.selo1() + " <b>" + C.fmtPct(pct) + "</b>" + dtxt(d); }
+    card("pc", n.pc, tem ? C.fmtInt(n.comparecimento) + " eleitores votaram" : "Aguardando a apuração · eleitorado: " + C.fmtInt(n.eleitorado),
+      ref ? refLin(ref.pc, n.dPc) : "");
+    card("pa", n.pa, tem ? C.fmtInt(n.abstencao) + " eleitores não compareceram" : "Aguardando a apuração",
+      ref ? refLin(ref.pa, n.dPa) : "");
+    card("pb", n.pvb, tem ? C.fmtInt(n.brancos) + " votos" : "Aguardando a apuração", "");
+    card("pn", n.ptvn, tem ? C.fmtInt(n.nulos) + " votos" : "Aguardando a apuração", "");
     var nota = $("numNota");
     if (ref) {
       nota.hidden = false;
-      setHtml(nota, "Brancos e nulos juntos: " + (tem ? "<b>" + C.fmtPct(n.pbn) + "</b> no 2º turno" + dtxt(n.dPbn) + " · " : "") +
-        "<b>" + C.fmtPct(ref.pbn) + "</b> no 1º turno (calculado como comparecimento menos votos válidos; o arquivo do 1º turno aqui guardado não separa brancos de nulos).");
+      setHtml(nota, '<span class="nota-lin">' + C.selo2(tem) + " Brancos e nulos juntos: " + (tem ? "<b>" + C.fmtPct(n.pbn) + "</b>" : "<b>—</b> (aguardando a apuração)") + "</span>" +
+        '<span class="nota-lin nota-ref">' + C.selo1() + " Brancos e nulos juntos: <b>" + C.fmtPct(ref.pbn) + "</b>" + (tem ? " (2º turno " + C.fmtSinal(n.dPbn) + " p.p.)" : "") +
+        ' <small>Calculado como comparecimento menos votos válidos; o arquivo do 1º turno aqui guardado não separa brancos de nulos.</small></span>');
     } else nota.hidden = true;
-    setTxt($("numSub"), tem ? "Totais nacionais da apuração em curso, com o 1º turno como régua." : "Aparecem quando o TSE publicar os primeiros votos; o 1º turno serve de régua.");
+    setTxt($("numSub"), tem ? "Totais nacionais do 2º turno, com a apuração em curso. A linha “1º turno” de cada cartão é só referência." : "Aparecem quando o TSE publicar os primeiros votos do 2º turno. O 1º turno aparece abaixo de cada número, só como referência.");
   }
 
   // =====================================================================
@@ -619,7 +691,7 @@
     if (!gB || !gM) return;
     gB.hidden = ext; gM.hidden = !ext;
     $("ctlOnde").querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.onde === S.onde)); });
-    setTxt($("kickerMapa"), ext ? "Presidente · voto de brasileiros no exterior" : "Presidente por estado");
+    renderKickerMapa();
     setTxt($("tituloMapa"), ext ? "Mapa-múndi do voto no exterior" : "Mapa do Brasil");
     if (ext) { if (mundi) mundi.abrir(); }
     else { if (mundi) mundi.fechar(); if (antes !== S.onde) renderMapa(); }
@@ -756,8 +828,15 @@
         '<li class="rank-vazio">' + (modo === "2t" ? "Nenhum estado com " + esc(nomePres(k)) + " à frente até aqui." : "Sem dados.") + "</li>");
     });
     setTxt($("destSub"), modo === "2t"
-      ? "Os estados onde cada candidato tem a maior vantagem agora, entre os que já têm votos apurados. Toque em um estado para ver os detalhes no mapa."
-      : "Ainda sem votos apurados no 2º turno: a lista mostra o 1º turno (04/10) como referência. Toque em um estado para ver os detalhes no mapa.");
+      ? "Os estados onde cada candidato tem a maior vantagem agora no 2º turno, entre os que já têm votos apurados. Toque em um estado para ver os detalhes no mapa."
+      : "Ainda não há votos do 2º turno. Enquanto isso, a lista e o mapa abaixo mostram o resultado do 1º turno, só como referência. Toque em um estado para ver os detalhes no mapa.");
+    var fx = $("destFaixa");
+    fx.hidden = modo === "2t";
+    setHtml(fx, modo === "2t" ? "" : C.selo1() + "<span><b>Mostrando o 1º turno (04/10).</b> As vantagens do 2º turno aparecem aqui quando a apuração começar.</span>");
+    $("destGrade").dataset.turno = modo;
+    ["13", "22"].forEach(function (k) {
+      setHtml($("tit" + k), (k === "13" ? "Lula" : "Flávio") + " · maiores vantagens " + (modo === "1t" ? C.selo1() : C.selo2(true)));
+    });
     $("miniMapa").querySelectorAll("path[data-uf]").forEach(function (p) { if (S.vis[p.dataset.uf]) pintar(p, S.vis[p.dataset.uf], modo); });
   }
 
@@ -823,9 +902,8 @@
     setTxt($("evoP22"), ult ? C.fmtPct(ult.b) : "—");
     setTxt($("evoV13"), ult ? C.fmtInt(ult.va) + " votos" : "");
     setTxt($("evoV22"), ult ? C.fmtInt(ult.vb) + " votos" : "");
-    if (ult && ult.dif !== 0) setTxt($("evoDifTxt"), C.PRES[ult.dif > 0 ? "13" : "22"].curto + " +" + C.fmtInt(Math.abs(ult.dif)));
-    else setTxt($("evoDifTxt"), ult ? "Empate" : "—");
-    setTxt($("evoDifDet"), ult ? "votos de vantagem, com " + C.fmtPct(ult.x) + " das urnas apuradas" : "Aparece com a primeira totalização.");
+    setTxt($("evoDifTxt"), ult ? (ult.dif !== 0 ? C.fmtInt(Math.abs(ult.dif)) : "Empate") : "—");
+    setTxt($("evoDifDet"), ult ? "votos de diferença, com " + C.fmtPct(ult.x) + " das urnas apuradas" : "Aparece com a primeira totalização.");
     setTxt($("evoN"), String(serie.length));
     setTxt($("evoNDet"), DEMO ? "Série de demonstração, refeita a cada atualização; não é guardada." : "Os pontos ficam guardados neste aparelho, só neste navegador.");
     if (!vazio) desenharEvolucao();
@@ -901,7 +979,7 @@
         var p = serie[melhor], cx = g.fx(p.x).toFixed(1);
         [g1, g2].forEach(function (o) { if (!o) return; var c = o.svg.querySelector(".g-cursor"); c.setAttribute("x1", cx); c.setAttribute("x2", cx); c.setAttribute("visibility", "visible"); });
         setTxt($("evoSel"), "Com " + C.fmtPct(p.x) + " das urnas apuradas: Lula " + C.fmtPct(p.a) + " · Flávio " + C.fmtPct(p.b) + " · " +
-          (p.dif === 0 ? "empate" : C.PRES[p.dif > 0 ? "13" : "22"].curto + " à frente por " + C.fmtInt(Math.abs(p.dif)) + " votos") + " (totalização de " + p.k.slice(0, 5) + " às " + p.k.slice(11, 16) + ")");
+          (p.dif === 0 ? "empate" : "diferença de " + C.fmtInt(Math.abs(p.dif)) + " votos") + " (totalização de " + p.k.slice(0, 5) + " às " + p.k.slice(11, 16) + ")");
       }
       g.svg.addEventListener("pointermove", mover);
       g.svg.addEventListener("pointerdown", mover);
@@ -982,9 +1060,10 @@
     C.UFS.forEach(function (uf) { S.vis[uf] = C.visaoUF(S.ufs[uf] || null, uf, PT); });
     // Sem votos do 2º turno o mapa "ao vivo" seria todo cinza: até a apuração começar, os mapas
     // mostram o 1º turno; quando chegam votos, passam sozinhos para o ao vivo (salvo escolha manual).
+    var algumVoto = C.visaoNacional(S.br, PT).d.temVotos;
+    for (var uf in S.vis) if (S.vis[uf].d && S.vis[uf].d.temVotos) algumVoto = true;
+    S.algumVoto = algumVoto;
     if (!S.modoManual) {
-      var algumVoto = C.visaoNacional(S.br, PT).d.temVotos;
-      for (var uf in S.vis) if (S.vis[uf].d && S.vis[uf].d.temVotos) algumVoto = true;
       var modoAuto = algumVoto ? "2t" : "1t";
       if (S.mapaModo !== modoAuto) { S.mapaModo = modoAuto; if (mundi) mundi.modoMudou(); }
     }

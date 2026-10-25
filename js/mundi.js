@@ -203,57 +203,66 @@
     function cartaoPais(iso) {
       var x = visaoPais(iso), a = x.a;
       if (!a) return cartaoVazio();
-      var v = x.v, ref = x.vr, vivo = x.vv;
+      var vv = x.vv, ref = x.vr, live = vv.temVotos, m = modo();
       var h = '<h3><small>Exterior' + (a.nCid > 1 ? " · " + a.nCid + " cidades" : " · 1 cidade") + '</small>' + esc(a.nome) + '</h3>';
-      var m = modo();
-      h += '<span class="cartao-modo ' + (x.usaRef ? "" : "vivo") + '">' +
-        (!x.usaRef ? "2º turno · ao vivo" : m === "1t" ? "1º turno (04/10) · resultado final" : "Sem votos apurados no 2º turno · mostrando o 1º turno") + '</span>';
-      var o = x.usaRef ? Math.max(0, 100 - v.p13 - v.p22) : 0;
-      var sum = v.p13 + v.p22 + o || 1;
-      h += '<div class="mini-barra ' + (x.usaRef && m === "2t" ? "ref" : "") + '"><span class="a" style="width:' + (100 * v.p13 / sum).toFixed(2) + '%"></span><span class="o" style="width:' + (100 * o / sum).toFixed(2) + '%"></span><span class="b" style="width:' + (100 * v.p22 / sum).toFixed(2) + '%"></span></div>';
-      h += linhaCartao("c13", "Lula", v.p13, v.v13) + linhaCartao("c22", "Flávio Bolsonaro", v.p22, v.v22);
-      if (x.usaRef && o > 0.005) h += '<p class="cartao-info"><span class="mut">Demais candidatos no 1º turno: ' + C.fmtPct(o) + ' dos votos válidos.</span></p>';
-      h += '<div class="cartao-info">';
-      if (!x.usaRef) {
-        h += v.lider
-          ? '<span>Vantagem: <span class="c' + v.lider + '">' + esc(nomePres(v.lider)) + ' +' + d2(v.margemPP) + ' p.p.</span> (' + C.fmtInt(v.margemVotos) + ' votos)</span>'
+      // ---- 2º turno (bloco principal)
+      h += '<section class="turno-bloco"><p class="turno-cab">' + C.selo2(live) + (live ? "" : ' <span class="mut">ainda sem votos apurados</span>') + '</p>';
+      if (live) {
+        var sum = vv.p13 + vv.p22 || 1;
+        h += '<div class="mini-barra"><span class="a" style="width:' + (100 * vv.p13 / sum).toFixed(2) + '%"></span><span class="b" style="width:' + (100 * vv.p22 / sum).toFixed(2) + '%"></span></div>';
+        h += linhaCartao("c13", "Lula", vv.p13, vv.v13) + linhaCartao("c22", "Flávio Bolsonaro", vv.p22, vv.v22);
+        h += '<div class="cartao-info">';
+        h += vv.lider
+          ? '<span>Vantagem: <span class="c' + vv.lider + '">' + esc(nomePres(vv.lider)) + ' +' + d2(vv.margemPP) + ' p.p.</span> (' + C.fmtInt(vv.margemVotos) + ' votos)</span>'
           : '<span>Votos idênticos até aqui.</span>';
-        h += '<span>Urnas apuradas: <b>' + C.fmtPct(v.pst) + '</b> (' + C.fmtInt(v.s) + ' de ' + C.fmtInt(v.st) + ' seções)</span>';
-        if (ref.temVotos) {
-          h += '<span class="mut">No 1º turno: Lula ' + C.fmtPct(ref.p13) + ' · Flávio ' + C.fmtPct(ref.p22) + '</span>';
-          h += '<span class="mut">Variação sobre o 1º turno: Lula ' + C.fmtSinal(v.p13 - ref.p13) + ' p.p. · Flávio ' + C.fmtSinal(v.p22 - ref.p22) + ' p.p.</span>';
-        }
-      } else if (ref.temVotos) {
-        if (ref.lider) h += '<span>Vantagem: <span class="c' + ref.lider + '">' + esc(nomePres(ref.lider)) + ' +' + d2(ref.margemPP) + ' p.p.</span> (' + C.fmtInt(ref.margemVotos) + ' votos)</span>';
-        h += '<span class="mut">Seções no 1º turno: ' + C.fmtInt(ref.st) + '</span>';
+        h += '<span>Urnas apuradas: <b>' + C.fmtPct(vv.pst) + '</b> (' + C.fmtInt(vv.s) + ' de ' + C.fmtInt(vv.st) + ' seções)</span>';
+        if (!DEMO && a.nLidas < a.nCid) h += '<span class="mut">Atenção: só ' + a.nLidas + ' de ' + a.nCid + ' cidades lidas até agora; os totais podem estar incompletos.</span>';
+        h += '</div>';
       } else {
-        h += '<span class="mut">Sem votos de brasileiros neste país no 1º turno.</span>';
+        h += '<div class="mini-barra vazia"><span class="a"></span><span class="b"></span></div>';
+        h += '<p class="cartao-vazio" style="margin-top:10px">Aguardando a apuração do 2º turno neste país.</p>';
       }
-      if (!DEMO && !x.usaRef && a.nLidas < a.nCid) h += '<span class="mut">Atenção: só ' + a.nLidas + ' de ' + a.nCid + ' cidades lidas até agora; os totais podem estar incompletos.</span>';
-      if (ref.eleitorado > 0) h += '<span class="mut">Eleitorado: ' + C.fmtInt(ref.eleitorado) + '</span>';
-      h += '</div>';
+      h += '</section>';
+      // ---- 1º turno (caixa de referência)
+      h += '<section class="caixa-ref"><p class="turno-cab">' + C.selo1() + (m === "1t" ? ' <span class="mut">cor do mapa agora</span>' : "") + '</p>';
+      if (ref.temVotos) {
+        var o = Math.max(0, 100 - ref.p13 - ref.p22);
+        h += '<div class="mini-barra"><span class="a" style="width:' + ref.p13.toFixed(2) + '%"></span><span class="o" style="width:' + o.toFixed(2) + '%"></span><span class="b" style="width:' + ref.p22.toFixed(2) + '%"></span></div>';
+        h += linhaCartao("c13", "Lula", ref.p13, ref.v13) + linhaCartao("c22", "Flávio Bolsonaro", ref.p22, ref.v22);
+        h += '<div class="cartao-info">';
+        if (o > 0.005) h += '<span class="mut">Demais candidatos: ' + C.fmtPct(o) + ' dos votos válidos.</span>';
+        if (ref.lider) h += '<span>Vantagem: <span class="c' + ref.lider + '">' + esc(nomePres(ref.lider)) + ' +' + d2(ref.margemPP) + ' p.p.</span> (' + C.fmtInt(ref.margemVotos) + ' votos)</span>';
+        h += '<span class="mut">Seções: ' + C.fmtInt(ref.st) + '</span>';
+        if (live) h += '<span class="mut">Variação do 2º turno sobre o 1º: Lula ' + C.fmtSinal(vv.p13 - ref.p13) + ' p.p. · Flávio ' + C.fmtSinal(vv.p22 - ref.p22) + ' p.p.</span>';
+        h += '</div>';
+      } else {
+        h += '<p class="cartao-vazio" style="margin-top:8px">Sem votos de brasileiros neste país no 1º turno.</p>';
+      }
+      h += '</section>';
+      if (ref.eleitorado > 0) h += '<p class="cartao-info"><span class="mut">Eleitorado: ' + C.fmtInt(ref.eleitorado) + '</span></p>';
       h += listaCidades(iso, x.usaRef);
       return h;
     }
 
     function cartaoVazio() {
-      var m = modo(), l13 = 0, l22 = 0, comVotos = 0;
+      var l13 = 0, l22 = 0, n2 = 0, r13 = 0, r22 = 0, n1 = 0;
       Object.keys(M.agg || {}).forEach(function (iso) {
         var x = visaoPais(iso);
-        if (x.l) { if (x.l === "13") l13++; else l22++; }
-        if (m === "1t" ? x.vr.temVotos : x.vv.temVotos) comVotos++;
+        if (x.vv.temVotos) { n2++; if (x.vv.lider === "13") l13++; else if (x.vv.lider === "22") l22++; }
+        if (x.vr.temVotos) { n1++; if (x.vr.lider === "13") r13++; else if (x.vr.lider === "22") r22++; }
       });
       var tot = ctx.totalExterior();
       var h = '<h3><small>Exterior</small>Escolha um país</h3><p class="cartao-vazio" style="margin-top:10px">Passe o mouse (ou toque) em um país do mapa, ou escolha na lista. Países pequenos aparecem como círculos. Dá para aproximar o mapa com os botões + e −.</p>';
-      if (comVotos > 0) {
-        h += '<p class="cartao-info" style="border:0;padding:0;margin-top:14px"><span>Em <b>' + comVotos + '</b> países ' + (m === "1t" ? "há resultado" : "já há votos apurados") + ' ' + (m === "1t" ? "no 1º turno" : "no 2º turno") + '.</span>' +
-          '<span><span class="c13">Lula lidera em ' + l13 + '</span> · <span class="c22">Flávio lidera em ' + l22 + '</span></span></p>';
-      } else {
-        h += '<p class="cartao-info" style="border:0;padding:0;margin-top:14px"><span class="mut">Nenhum país tem votos apurados ainda. Troque para “1º turno” para ver a referência.</span></p>';
-      }
-      if (tot && tot.temVotos) {
-        h += '<p class="cartao-info"><span class="mut">Total do Exterior no ' + (tot.ref ? "1º turno" : "2º turno") + ': <span class="c13">Lula ' + C.fmtPct(tot.p13) + '</span> · <span class="c22">Flávio ' + C.fmtPct(tot.p22) + '</span></span></p>';
-      }
+      h += '<section class="turno-bloco"><p class="turno-cab">' + C.selo2(n2 > 0) + '</p>' + (n2 > 0
+        ? '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span>Em <b>' + n2 + '</b> países já há votos apurados.</span><span><span class="c13">Lula lidera em ' + l13 + '</span> · <span class="c22">Flávio lidera em ' + l22 + '</span></span></p>'
+        : '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span class="mut">Nenhum país tem votos apurados ainda.</span></p>');
+      if (tot && !tot.ref) h += '<p class="cartao-info"><span class="mut">Total do Exterior: <span class="c13">Lula ' + C.fmtPct(tot.p13) + '</span> · <span class="c22">Flávio ' + C.fmtPct(tot.p22) + '</span></span></p>';
+      h += '</section>';
+      h += '<section class="caixa-ref"><p class="turno-cab">' + C.selo1() + '</p>' + (n1 > 0
+        ? '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span>Em <b>' + n1 + '</b> países houve votos.</span><span><span class="c13">Lula liderou em ' + r13 + '</span> · <span class="c22">Flávio liderou em ' + r22 + '</span></span></p>'
+        : '<p class="cartao-info" style="border:0;padding:0;margin-top:8px"><span class="mut">Sem dados do 1º turno.</span></p>');
+      if (tot && tot.ref) h += '<p class="cartao-info"><span class="mut">Total do Exterior: <span class="c13">Lula ' + C.fmtPct(tot.p13) + '</span> · <span class="c22">Flávio ' + C.fmtPct(tot.p22) + '</span></span></p>';
+      h += '</section>';
       return h;
     }
 
@@ -268,7 +277,7 @@
       var itens = X.ranking(m === "1t" ? M.aggRef : M.agg, M.aggRef);
       var algum = itens.some(function (i) { return i.v.lider; });
       var maxN = M.todos ? itens.length : 15;
-      ctx.setTxt($("rankPaisNota"), algum ? "por votos válidos" : (m === "1t" ? "sem dados" : "sem votos ainda"));
+      ctx.setHtml($("rankPaisNota"), m === "1t" ? C.selo1() + (algum ? " por votos válidos" : " sem dados") : (algum ? "por votos válidos" : "sem votos ainda"));
       ctx.setHtml(ol, itens.slice(0, maxN).map(function (i) {
         var sel = M.fixo === i.iso, v = i.v;
         return '<li><button type="button" class="rank-lin' + (sel ? " sel" : "") + '" data-pais="' + i.iso + '"' + (sel ? ' aria-current="true"' : "") + '>' +
@@ -283,7 +292,7 @@
       var n = nLidas(), tot = P.CIDADES.length, txt;
       if (M.erro) txt = M.erro;
       else if (DEMO) txt = "Dados de demonstração para as " + tot + " cidades.";
-      else if (modo() === "1t") txt = "Resultado final do 1º turno em " + tot + " cidades.";
+      else if (modo() === "1t") txt = "1º turno (04/10): resultado final em " + tot + " cidades.";
       else if (!n) txt = M.lendo ? "Lendo as " + tot + " cidades do TSE…" : "Aguardando as cidades do TSE…";
       else {
         var hh = M.ult ? new Date(M.ult) : null;
@@ -301,6 +310,7 @@
       renderCartao();
       renderRanking();
       renderStatus();
+      ctx.setHtml($("legTurnoMundi"), modo() === "1t" ? C.selo1() + " cores do 1º turno" : C.selo2(true) + " cores do 2º turno");
       ctx.setTxt($("mapaSub"), modo() === "2t"
         ? "Cada país leva a cor de quem está à frente entre os brasileiros que votaram lá; quanto mais intensa, maior a vantagem. Cinza: ainda sem votos apurados. Países sem brasileiros votando ficam em cinza bem claro."
         : "Resultado final do 1º turno (04/10) no exterior, colorido pelo mais votado entre Lula e Flávio em cada país. Os demais candidatos não entram na cor.");
@@ -374,6 +384,7 @@
         return h + "</span>";
       }
       $("legendaMundi").innerHTML =
+        '<div class="leg-turno" id="legTurnoMundi"></div>' +
         '<div class="leg-linha"><span class="leg-nome" style="color:var(--c13)">Lula à frente</span>' + esc5("s13") + '<span class="leg-rot">vantagem: de menos de 2 a mais de 20 pontos percentuais</span></div>' +
         '<div class="leg-linha"><span class="leg-nome" style="color:var(--c22)">Flávio à frente</span>' + esc5("s22") + '<span class="leg-rot">mesma escala</span></div>' +
         '<div class="leg-linha"><span class="leg-nome">Sem votos</span><span class="leg-esc vazio"><i></i></span><span class="leg-rot">ainda não apurado (ou empate exato)</span></div>' +

@@ -69,17 +69,17 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
       <div class="hero-cab">
         <p class="kicker">Presidente da República <span aria-hidden="true">·</span> 2º turno <span aria-hidden="true">·</span> 25 de outubro de 2026</p>
         <h1 id="tituloHero" class="hero-titulo">Apuração do <em>2º turno</em></h1>
-        <p class="hero-modo" id="heroModo" data-modo="antes"><span class="pilula" id="heroPilula">Referência · resultado do 1º turno</span></p>
+        <p class="hero-modo" id="heroModo" data-modo="antes"><span class="pilula" id="heroPilula"><span class="selo-t selo-2t">2º turno</span> <span>Aguardando os primeiros resultados (17h)</span></span></p>
       </div>
 
-      <div class="duelo" id="duelo">
+      <div class="duelo sem-voto" id="duelo">
         <article class="cand" data-n="13" id="cand13" aria-label="Lula">
           <div class="foto" id="foto13"><span class="ini" aria-hidden="true">LU</span></div>
           <div class="cand-corpo">
             <h2 class="cand-nome">Lula</h2>
             <p class="cand-sub"><span class="partido">PT</span> · vice Geraldo Alckmin (PSB)</p>
-            <p class="cand-pct"><span class="pct-num" id="pct13">0,00</span><span class="pct-sinal">%</span></p>
-            <p class="cand-votos"><b id="votos13">0</b> <span id="rot13">votos</span></p>
+            <p class="cand-pct"><span class="pct-num" id="pct13">—</span><span class="pct-sinal">%</span></p>
+            <p class="cand-votos"><b id="votos13"></b> <span id="rot13">aguardando apuração</span></p>
             <p class="selo-eleito" id="eleito13" hidden>Eleito pelo TSE</p>
           </div>
         </article>
@@ -89,23 +89,22 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
           <div class="cand-corpo">
             <h2 class="cand-nome">Flávio Bolsonaro</h2>
             <p class="cand-sub"><span class="partido">PL</span> · vice Alfredo Gaspar (PL)</p>
-            <p class="cand-pct"><span class="pct-num" id="pct22">0,00</span><span class="pct-sinal">%</span></p>
-            <p class="cand-votos"><b id="votos22">0</b> <span id="rot22">votos</span></p>
+            <p class="cand-pct"><span class="pct-num" id="pct22">—</span><span class="pct-sinal">%</span></p>
+            <p class="cand-votos"><b id="votos22"></b> <span id="rot22">aguardando apuração</span></p>
             <p class="selo-eleito" id="eleito22" hidden>Eleito pelo TSE</p>
           </div>
         </article>
       </div>
 
       <div class="barra-bloco">
-        <div class="barra-dupla" id="barraHero" role="img" aria-label="Proporção de votos entre os dois candidatos">
+        <div class="barra-dupla" id="barraHero" role="img" aria-label="Proporção de votos do 2º turno entre os dois candidatos">
           <span class="seg seg13" id="seg13"></span><span class="seg segOutros" id="segOutros"></span><span class="seg seg22" id="seg22"></span>
           <i class="tick50" aria-hidden="true"><em>50%</em></i>
         </div>
-        <p class="barra-nota" id="barraNota">Barra: parcela de cada um nos votos válidos do 1º turno; cinza = demais candidatos.</p>
+        <p class="barra-nota" id="barraNota">Barra do 2º turno: aparece quando houver votos apurados. A linha marca os 50%.</p>
       </div>
 
       <div class="hero-rodape">
-        <p class="diferenca" id="heroDif" aria-live="polite">&nbsp;</p>
         <p class="aviso-tse" id="heroEleito" hidden></p>
       </div>
 
@@ -130,6 +129,20 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
           <p class="painel-mini" id="heroAtual">Aguardando o TSE</p>
         </div>
       </div>
+
+      <details class="caixa-ref ref-hero" id="refHero" open>
+        <summary>
+          <span class="ref-tit"><span class="selo-t selo-1t">1º turno · 04/10</span> <b id="refTit">Como foi no 1º turno (04/10)</b></span>
+          <span class="ref-resumo" id="refResumo"></span>
+          <span class="ref-seta" aria-hidden="true"></span>
+        </summary>
+        <div class="ref-corpo">
+          <div class="ref-cand c13"><span class="ref-nome">Lula</span><b id="ref13">—</b><small id="refv13"></small></div>
+          <div class="ref-cand c22"><span class="ref-nome">Flávio Bolsonaro</span><b id="ref22">—</b><small id="refv22"></small></div>
+          <div class="ref-barra" id="refBarra" role="img" aria-label="Proporção de votos do 1º turno"><span class="seg13" id="rseg13"></span><span class="segOutros" id="rsegOutros"></span><span class="seg22" id="rseg22"></span></div>
+          <p class="ref-dif" id="refDif"></p>
+        </div>
+      </details>
     </div>
   </div>
 
@@ -137,9 +150,9 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
     <div class="wrap">
       <header class="sec-cab">
         <div>
-          <p class="sec-kicker">Brasil, presidente</p>
+          <p class="sec-kicker"><span class="selo-t selo-2t g">2º turno</span> Brasil, presidente</p>
           <h2 id="tituloNum">Números gerais</h2>
-          <p class="sec-sub" id="numSub">Comparecimento e votos que não escolhem candidato, com o 1º turno como régua.</p>
+          <p class="sec-sub" id="numSub">Comparecimento e votos que não escolhem candidato. A linha “1º turno” de cada cartão é só referência.</p>
         </div>
       </header>
       <div class="num-grade" id="numGrade"></div>
@@ -150,22 +163,23 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
     <div class="wrap">
       <header class="sec-cab">
         <div>
-          <p class="sec-kicker">Presidente por estado</p>
+          <p class="sec-kicker"><span class="selo-t selo-2t g">2º turno</span> Presidente por estado</p>
           <h2 id="tituloDest">Estados em destaque</h2>
           <p class="sec-sub" id="destSub">Onde cada candidato tem a maior vantagem.</p>
         </div>
         <button type="button" class="btn-ver" data-ir="mapa">Abrir o mapa</button>
       </header>
-      <div class="dest-grade">
+      <div class="faixa-turno" id="destFaixa" data-turno="1t" hidden></div>
+      <div class="dest-grade" id="destGrade">
         <div class="cartao-g mini-mapa-card">
           <div class="mini-mapa" id="miniMapa" aria-hidden="true"></div>
         </div>
         <div class="cartao-g dest-lista">
-          <h3 class="t13">Lula · maiores vantagens</h3>
+          <h3 class="t13" id="tit13">Lula · maiores vantagens</h3>
           <ol class="rank" id="rank13"></ol>
         </div>
         <div class="cartao-g dest-lista">
-          <h3 class="t22">Flávio · maiores vantagens</h3>
+          <h3 class="t22" id="tit22">Flávio · maiores vantagens</h3>
           <ol class="rank" id="rank22"></ol>
         </div>
       </div>
@@ -178,7 +192,7 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
   <div class="wrap">
     <header class="sec-cab">
       <div>
-        <p class="sec-kicker" id="kickerMapa">Presidente por estado</p>
+        <p class="sec-kicker" id="kickerMapa"><span class="selo-t selo-2t g">2º turno</span> Presidente por estado</p>
         <h2 id="tituloMapa">Mapa do Brasil</h2>
         <p class="sec-sub" id="mapaSub">Cada estado leva a cor de quem está à frente; quanto mais intensa, maior a vantagem.</p>
       </div>
@@ -188,11 +202,13 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
           <button type="button" data-onde="exterior" aria-pressed="false">Exterior</button>
         </div>
         <div class="seg-ctl" role="group" aria-label="Qual turno mostrar no mapa" id="ctlMapa">
-          <button type="button" data-modo="2t" aria-pressed="true">2º turno ao vivo</button>
-          <button type="button" data-modo="1t" aria-pressed="false">1º turno</button>
+          <button type="button" data-modo="2t" aria-pressed="true">2º turno (ao vivo)</button>
+          <button type="button" data-modo="1t" aria-pressed="false">1º turno (04/10)</button>
         </div>
       </div>
     </header>
+
+    <div class="faixa-turno" id="faixaMapa" data-turno="1t" role="status" hidden></div>
 
     <div class="mapa-grade" id="brasilGrade">
       <div class="mapa-col">
@@ -248,9 +264,9 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
   <div class="wrap">
     <header class="sec-cab">
       <div>
-        <p class="sec-kicker">Presidente · votos válidos</p>
+        <p class="sec-kicker"><span class="selo-t selo-2t g">2º turno</span> Presidente · votos válidos</p>
         <h2 id="tituloEvo">Evolução da apuração</h2>
-        <p class="sec-sub">Como a votação de cada candidato muda conforme as urnas vão sendo apuradas. Cada ponto é uma totalização nova do TSE.</p>
+        <p class="sec-sub">Como a votação de cada candidato no 2º turno muda conforme as urnas vão sendo apuradas. Cada ponto é uma totalização nova do TSE. Este gráfico é só do 2º turno: o 1º turno não aparece aqui.</p>
       </div>
     </header>
     <div class="evo-grade">
@@ -262,7 +278,7 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
         </div>
         <div class="evo-corpo" id="evoCorpo">
           <div class="evo-leg" aria-hidden="true"><span class="l13"><i></i>Lula</span><span class="l22"><i></i>Flávio Bolsonaro</span></div>
-          <h3 class="evo-tit">Votos válidos (%) × urnas apuradas (%)</h3>
+          <h3 class="evo-tit">2º turno: votos válidos (%) × urnas apuradas (%)</h3>
           <p class="evo-sel" id="evoSel" aria-live="off">Passe o mouse (ou toque) sobre o gráfico para ver cada totalização.</p>
           <div class="evo-graf" id="evoGraf"></div>
           <h3 class="evo-tit evo-tit-2">Diferença em votos <small>acima de zero: Lula à frente · abaixo: Flávio à frente</small></h3>
@@ -284,9 +300,9 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
   <div class="wrap">
     <header class="sec-cab">
       <div>
-        <p class="sec-kicker">Presidente · 27 estados e exterior</p>
+        <p class="sec-kicker"><span class="selo-t selo-2t g">2º turno</span> Presidente · 27 estados e exterior</p>
         <h2 id="tituloEstados">Estado por estado</h2>
-        <p class="sec-sub">Linhas em tom apagado ainda não têm votos apurados: mostram, para referência, o resultado do 1º turno (marcado “1º T”).</p>
+        <p class="sec-sub">Cada estado tem duas partes: o <b>2º turno</b> (ao vivo, em destaque; mostra “—” até haver votos apurados) e, separado e em cinza, o <b>1º turno (04/10)</b>, só como referência.</p>
       </div>
     </header>
     <div class="controles">
@@ -311,8 +327,13 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
         <button type="button" data-reg="Exterior" aria-pressed="false">Exterior</button>
       </div>
     </div>
+    <p class="dica-ord" id="dicaOrd" hidden>Enquanto o 2º turno não tem votos, “Lula”, “Flávio” e “Maior vantagem” ordenam pelo 1º turno (04/10).</p>
+    <p class="leg-ufs"><span class="selo-t selo-2t g">2º turno</span> em cima, ao vivo <span class="selo-t selo-1t">1º turno · 04/10</span> embaixo, só referência</p>
+    <div class="uf-grupos" aria-hidden="true">
+      <span class="g2"><span class="selo-t selo-2t g">2º turno</span></span><span class="g1"><span class="selo-t selo-1t">1º turno · 04/10</span></span>
+    </div>
     <div class="uf-cab" aria-hidden="true">
-      <span>Estado</span><span>Divisão dos votos</span><span class="t13">Lula</span><span class="t22">Flávio</span><span>Vantagem</span><span>Apurado</span>
+      <span>Estado</span><span class="c2">Divisão dos votos</span><span class="t13 c2">Lula</span><span class="t22 c2">Flávio</span><span class="c2">Vantagem</span><span class="c2">Apurado</span><span class="t13 c1">Lula</span><span class="t22 c1">Flávio</span>
     </div>
     <ul class="ufs" id="listaUFs"></ul>
   </div>
@@ -323,9 +344,9 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
   <div class="wrap">
     <header class="sec-cab">
       <div>
-        <p class="sec-kicker">2º turno nos estados</p>
+        <p class="sec-kicker"><span class="selo-t selo-2t g">2º turno</span> nos estados</p>
         <h2 id="tituloGov">Governadores</h2>
-        <p class="sec-sub">Seis estados têm disputa de governador no 2º turno. As cores aqui só distinguem os dois candidatos de cada estado.</p>
+        <p class="sec-sub">Seis estados têm disputa de governador no 2º turno. As cores só distinguem os dois candidatos de cada estado. Em cada cartão, o 2º turno vem em destaque; o 1º turno (04/10) fica na caixinha de baixo, só como referência.</p>
       </div>
     </header>
     <div class="gov-grade" id="govGrade"></div>
@@ -360,7 +381,7 @@ document.documentElement.setAttribute("data-theme","light"); /* sempre abre no m
 <footer class="rodape">
   <div class="wrap">
     <p><strong>Site independente, sem vínculo com o TSE ou qualquer campanha.</strong> Fonte: TSE (<a href="https://resultados.tse.jus.br" target="_blank" rel="noopener noreferrer">resultados.tse.jus.br</a>). Os dados oficiais são os do TSE.</p>
-    <p class="rodape-mini">Os dados são lidos direto do TSE pelo seu navegador, sem intermediários, e podem atrasar alguns minutos em relação ao site oficial. O selo “Eleito” só aparece quando o próprio TSE o marca. Percentuais são de votos válidos. Referência do 1º turno: resultado final de 04/10/2026. A aba Notícias lê o feed público da Agência Brasil; os demais veículos e o X abrem em outra página.</p>
+    <p class="rodape-mini">Os dados são lidos direto do TSE pelo seu navegador, sem intermediários, e podem atrasar alguns minutos em relação ao site oficial. O selo “Eleito” só aparece quando o próprio TSE o marca. Percentuais são de votos válidos. O 1º turno (resultado final de 04/10/2026) aparece só como referência, sempre separado e marcado como “1º turno”. A aba Notícias lê o feed público da Agência Brasil; os demais veículos e o X abrem em outra página.</p>
   </div>
 </footer>
 

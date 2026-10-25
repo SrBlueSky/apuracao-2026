@@ -445,6 +445,15 @@
     return v.ref ? v.ref[k].pct - 1000 : -2000; // sem votos: depois dos que têm
   }
 
+  // Selos de turno (uma linguagem visual só, usada em todo o site; estilos em css/estilo.css)
+  // 2º turno: selo sólido, com bolinha "ao vivo" quando há votos. 1º turno: selo de contorno, discreto.
+  function selo2(vivo) {
+    return '<span class="selo-t selo-2t' + (vivo ? " vivo" : "") + '">2º turno</span>';
+  }
+  function selo1() {
+    return '<span class="selo-t selo-1t">1º turno · 04/10</span>';
+  }
+
   // Total nacional a partir do arquivo br (usado pelo hero)
   function visaoNacional(d, pt) {
     var disp = disputa(d, PRES_NUMS);
@@ -471,6 +480,6 @@
     refPresidente: refPresidente, refGovernador: refGovernador,
     disputa: disputa, faixaMargem: faixaMargem,
     visaoUF: visaoUF, visaoGov: visaoGov, visaoNumeros: visaoNumeros, visaoNacional: visaoNacional,
-    ordenarUFs: ordenarUFs, modoHero: modoHero
+    ordenarUFs: ordenarUFs, modoHero: modoHero, selo2: selo2, selo1: selo1
   };
 });
